@@ -35,6 +35,126 @@
         radial-gradient(ellipse 60% 40% at 80% 80%, #7c3aed10, transparent);
     }
 
+    /* ===== AUTH SCREEN ===== */
+    #authScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px #00000060;
+    }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .auth-logo-icon { font-size: 40px; display: block; margin-bottom: 8px; }
+
+    .auth-logo-text {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #c084fc, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: var(--surface2);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text3);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all .2s;
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      color: #fff;
+    }
+
+    .auth-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text2);
+      margin-bottom: 7px;
+      margin-top: 14px;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      font-size: 15px;
+      font-family: inherit;
+      direction: rtl;
+      background: var(--surface2);
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .auth-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #a855f715; }
+    .auth-input::placeholder { color: var(--text3); }
+
+    .auth-btn {
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px;
+      border-radius: 13px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      color: #fff;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px #a855f740;
+      transition: all .2s;
+    }
+    .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px #a855f760; }
+    .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .auth-error {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #f43f5e15;
+      border: 1px solid #f43f5e30;
+      color: #f43f5e;
+      font-size: 13px;
+      text-align: center;
+      display: none;
+    }
+
+    /* ===== MAIN APP ===== */
+    #appScreen { display: none; }
+
     header {
       background: rgba(26, 16, 48, 0.85);
       backdrop-filter: blur(20px);
@@ -66,6 +186,8 @@
       background-clip: text;
     }
 
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+
     .new-btn {
       background: linear-gradient(135deg, var(--accent2), var(--accent));
       color: #fff;
@@ -79,7 +201,20 @@
       box-shadow: 0 4px 20px #a855f740;
       transition: all .2s;
     }
-    .new-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px #a855f760; }
+    .new-btn:hover { transform: translateY(-1px); }
+
+    .logout-btn {
+      background: transparent;
+      color: var(--text3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
 
     .back-btn {
       background: transparent;
@@ -108,8 +243,18 @@
       padding: 13px 30px;
       font-size: 15px;
       z-index: 999;
-      box-shadow: 0 8px 32px #0008, 0 0 0 1px #a855f720;
+      box-shadow: 0 8px 32px #0008;
       display: none;
+      white-space: nowrap;
+    }
+
+    .user-email {
+      font-size: 12px;
+      color: var(--text3);
+      padding: 6px 12px;
+      background: var(--surface2);
+      border-radius: 20px;
+      border: 1px solid var(--border);
     }
 
     .search-input {
@@ -289,7 +434,6 @@
       box-shadow: 0 0 0 3px #a855f715;
     }
     input::placeholder, textarea::placeholder { color: var(--text3); }
-
     select option { background: var(--surface2); color: var(--text); }
 
     textarea {
@@ -316,7 +460,6 @@
       cursor: pointer;
       transition: all .2s;
     }
-    .cancel-btn:hover { border-color: var(--accent); color: var(--accent3); }
 
     .save-btn {
       padding: 12px 26px;
@@ -331,7 +474,6 @@
       box-shadow: 0 4px 20px #a855f740;
       transition: all .2s;
     }
-    .save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px #a855f760; }
 
     .delete-btn {
       padding: 12px 20px;
@@ -342,9 +484,7 @@
       font-family: inherit;
       font-size: 14px;
       cursor: pointer;
-      transition: all .2s;
     }
-    .delete-btn:hover { background: #f43f5e20; border-color: #f43f5e60; }
 
     .edit-btn {
       padding: 12px 26px;
@@ -357,19 +497,11 @@
       font-weight: 700;
       cursor: pointer;
       box-shadow: 0 4px 20px #a855f740;
-      transition: all .2s;
     }
-    .edit-btn:hover { transform: translateY(-1px); }
 
     .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .detail-date { font-size: 12px; color: var(--text3); }
-    .detail-title {
-      font-size: 23px;
-      font-weight: 800;
-      margin-bottom: 22px;
-      color: var(--text);
-      line-height: 1.4;
-    }
+    .detail-title { font-size: 23px; font-weight: 800; margin-bottom: 22px; color: var(--text); line-height: 1.4; }
 
     .section {
       border-radius: 14px;
@@ -382,185 +514,340 @@
     .section-label { font-size: 12px; font-weight: 800; margin-bottom: 8px; }
     .section-text { font-size: 15px; line-height: 1.9; color: var(--text2); white-space: pre-wrap; }
 
+    .loading-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     .hidden { display: none; }
 
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent2); }
   </style>
 </head>
 <body>
 
 <div class="toast" id="toast"></div>
 
-<header>
-  <div class="header-inner">
-    <div class="logo">
-      <span class="logo-icon">🎬</span>
-      <span class="logo-text">مكتبة سكربتاتي</span>
-    </div>
-    <button class="new-btn" id="newBtn" onclick="openForm(null)">+ سكربت جديد</button>
-    <button class="back-btn hidden" id="backBtn" onclick="showView('list')">→ الرجوع</button>
-  </div>
-</header>
-
-<div class="container">
-
-  <!-- LIST VIEW -->
-  <div id="listView">
-    <input class="search-input" id="searchInput" placeholder="🔍 دور على سكربت..." oninput="renderList()" />
-    <div class="pills" id="pills"></div>
-    <div class="stats-row" id="statsRow"></div>
-    <div class="grid" id="grid"></div>
-  </div>
-
-  <!-- FORM VIEW -->
-  <div id="formView" class="hidden">
-    <div class="form-wrap">
-      <div class="form-title" id="formTitle">✨ سكربت جديد</div>
-
-      <label>العنوان</label>
-      <input type="text" id="fTitle" placeholder="اسم الفيديو أو الموضوع..." />
-
-      <div class="row2">
-        <div>
-          <label>المنصة</label>
-          <select id="fPlatform">
-            <option>شورتس</option>
-            <option>ريلز</option>
-            <option>تيك توك</option>
-            <option>يوتيوب</option>
-          </select>
-        </div>
-        <div>
-          <label>التصنيف</label>
-          <select id="fCategory">
-            <option>تقني</option>
-            <option>تعليمي</option>
-            <option>ترفيهي</option>
-            <option>نصائح</option>
-          </select>
-        </div>
-      </div>
-
-      <label>🔴 Hook — الخطاف (0-3 ثواني)</label>
-      <textarea id="fHook" placeholder="الجملة الأولى اللي تجذب المشاهد..."></textarea>
-
-      <label>📦 Value — المحتوى</label>
-      <textarea id="fValue" placeholder="الخطوات أو المعلومات..."></textarea>
-
-      <label>🎯 Result — النتيجة</label>
-      <textarea id="fResult" placeholder="شو بيصير بعد ما يطبق الشخص؟"></textarea>
-
-      <label>📢 CTA — الدعوة للتفاعل</label>
-      <textarea id="fCta" placeholder="احفظ، شير، كومنت..."></textarea>
-
-      <div class="form-actions">
-        <button class="cancel-btn" onclick="showView('list')">إلغاء</button>
-        <button class="save-btn" onclick="saveScript()">💾 حفظ السكربت</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- DETAIL VIEW -->
-  <div id="detailView" class="hidden">
-    <div class="form-wrap">
-      <div class="detail-header">
-        <div id="dBadges"></div>
-        <div class="detail-date" id="dDate"></div>
-      </div>
-      <div class="detail-title" id="dTitle"></div>
-      <div id="dSections"></div>
-      <div class="form-actions">
-        <button class="delete-btn" onclick="deleteScript()">🗑️ حذف</button>
-        <button class="edit-btn" onclick="openForm(currentScript)">✏️ تعديل</button>
-      </div>
-    </div>
-  </div>
-
+<!-- LOADING -->
+<div id="loadingScreen" class="loading-screen">
+  <div class="spinner"></div>
+  <div style="color:var(--text3);font-size:14px">جاري التحميل...</div>
 </div>
 
-<script>
+<!-- AUTH SCREEN -->
+<div id="authScreen" class="hidden">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <span class="auth-logo-icon">🎬</span>
+      <span class="auth-logo-text">مكتبة سكربتاتي</span>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')" id="tabLogin">دخول</button>
+      <button class="auth-tab" onclick="switchTab('register')" id="tabRegister">حساب جديد</button>
+    </div>
+
+    <div id="loginForm">
+      <label class="auth-label">الإيميل</label>
+      <input class="auth-input" type="email" id="loginEmail" placeholder="example@email.com" dir="ltr" />
+      <label class="auth-label">كلمة المرور</label>
+      <input class="auth-input" type="password" id="loginPass" placeholder="••••••••" dir="ltr" />
+      <button class="auth-btn" onclick="doLogin()" id="loginBtn">دخول</button>
+    </div>
+
+    <div id="registerForm" class="hidden">
+      <label class="auth-label">الإيميل</label>
+      <input class="auth-input" type="email" id="regEmail" placeholder="example@email.com" dir="ltr" />
+      <label class="auth-label">كلمة المرور</label>
+      <input class="auth-input" type="password" id="regPass" placeholder="6 أحرف على الأقل" dir="ltr" />
+      <button class="auth-btn" onclick="doRegister()" id="regBtn">إنشاء حساب</button>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appScreen" class="hidden">
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🎬</span>
+        <span class="logo-text">مكتبة سكربتاتي</span>
+      </div>
+      <div class="header-actions">
+        <span class="user-email" id="userEmail"></span>
+        <button class="new-btn" id="newBtn" onclick="openForm(null)">+ سكربت جديد</button>
+        <button class="back-btn hidden" id="backBtn" onclick="showView('list')">→ الرجوع</button>
+        <button class="logout-btn" id="logoutBtn" onclick="doLogout()">خروج</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- LIST VIEW -->
+    <div id="listView">
+      <input class="search-input" id="searchInput" placeholder="🔍 دور على سكربت..." oninput="renderList()" />
+      <div class="pills" id="pills"></div>
+      <div class="stats-row" id="statsRow"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <!-- FORM VIEW -->
+    <div id="formView" class="hidden">
+      <div class="form-wrap">
+        <div class="form-title" id="formTitle">✨ سكربت جديد</div>
+        <label>العنوان</label>
+        <input type="text" id="fTitle" placeholder="اسم الفيديو أو الموضوع..." />
+        <div class="row2">
+          <div>
+            <label>المنصة</label>
+            <select id="fPlatform">
+              <option>شورتس</option><option>ريلز</option>
+              <option>تيك توك</option><option>يوتيوب</option>
+            </select>
+          </div>
+          <div>
+            <label>التصنيف</label>
+            <select id="fCategory">
+              <option>تقني</option><option>تعليمي</option>
+              <option>ترفيهي</option><option>نصائح</option>
+            </select>
+          </div>
+        </div>
+        <label>🔴 Hook — الخطاف (0-3 ثواني)</label>
+        <textarea id="fHook" placeholder="الجملة الأولى اللي تجذب المشاهد..."></textarea>
+        <label>📦 Value — المحتوى</label>
+        <textarea id="fValue" placeholder="الخطوات أو المعلومات..."></textarea>
+        <label>🎯 Result — النتيجة</label>
+        <textarea id="fResult" placeholder="شو بيصير بعد ما يطبق الشخص؟"></textarea>
+        <label>📢 CTA — الدعوة للتفاعل</label>
+        <textarea id="fCta" placeholder="احفظ، شير، كومنت..."></textarea>
+        <div class="form-actions">
+          <button class="cancel-btn" onclick="showView('list')">إلغاء</button>
+          <button class="save-btn" onclick="saveScript()">💾 حفظ السكربت</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL VIEW -->
+    <div id="detailView" class="hidden">
+      <div class="form-wrap">
+        <div class="detail-header">
+          <div id="dBadges"></div>
+          <div class="detail-date" id="dDate"></div>
+        </div>
+        <div class="detail-title" id="dTitle"></div>
+        <div id="dSections"></div>
+        <div class="form-actions">
+          <button class="delete-btn" onclick="deleteScript()">🗑️ حذف</button>
+          <button class="edit-btn" onclick="openForm(currentScript)">✏️ تعديل</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import {
+    getFirestore, collection, doc,
+    addDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBl_mMsUWLERxXveqYYeGxIrBEYArGp-WA",
+    authDomain: "scriptati-d503f.firebaseapp.com",
+    projectId: "scriptati-d503f",
+    storageBucket: "scriptati-d503f.firebasestorage.app",
+    messagingSenderId: "1051271258822",
+    appId: "1:1051271258822:web:7b97d7dd1cded42d46edc7",
+    measurementId: "G-V9N8J1D8Y9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
   const PLATFORM_COLORS = {
-    "شورتس": "#f43f5e",
-    "ريلز": "#e879f9",
-    "تيك توك": "#94a3b8",
-    "يوتيوب": "#f43f5e",
+    "شورتس": "#f43f5e", "ريلز": "#e879f9",
+    "تيك توك": "#94a3b8", "يوتيوب": "#f43f5e",
   };
 
   let scripts = [];
   let filterPlatform = "الكل";
   let currentScript = null;
   let editingId = null;
+  let currentUser = null;
 
-  function load() {
-    try { scripts = JSON.parse(localStorage.getItem("scripts") || "[]"); }
-    catch { scripts = []; }
+  // ===== AUTH STATE =====
+  onAuthStateChanged(auth, async (user) => {
+    document.getElementById("loadingScreen").classList.add("hidden");
+    if (user) {
+      currentUser = user;
+      document.getElementById("userEmail").textContent = user.email;
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("appScreen").classList.remove("hidden");
+      await loadScripts();
+      renderList();
+    } else {
+      currentUser = null;
+      document.getElementById("appScreen").classList.add("hidden");
+      document.getElementById("authScreen").classList.remove("hidden");
+    }
+  });
+
+  // ===== AUTH FUNCTIONS =====
+  window.switchTab = (tab) => {
+    document.getElementById("loginForm").classList.toggle("hidden", tab !== "login");
+    document.getElementById("registerForm").classList.toggle("hidden", tab !== "register");
+    document.getElementById("tabLogin").classList.toggle("active", tab === "login");
+    document.getElementById("tabRegister").classList.toggle("active", tab === "register");
+    document.getElementById("authError").style.display = "none";
+  };
+
+  window.doLogin = async () => {
+    const email = document.getElementById("loginEmail").value.trim();
+    const pass = document.getElementById("loginPass").value;
+    const btn = document.getElementById("loginBtn");
+    if (!email || !pass) return showAuthError("حط الإيميل وكلمة المرور");
+    btn.disabled = true;
+    btn.textContent = "جاري الدخول...";
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (e) {
+      showAuthError(getAuthError(e.code));
+      btn.disabled = false;
+      btn.textContent = "دخول";
+    }
+  };
+
+  window.doRegister = async () => {
+    const email = document.getElementById("regEmail").value.trim();
+    const pass = document.getElementById("regPass").value;
+    const btn = document.getElementById("regBtn");
+    if (!email || !pass) return showAuthError("حط الإيميل وكلمة المرور");
+    if (pass.length < 6) return showAuthError("كلمة المرور لازم تكون 6 أحرف على الأقل");
+    btn.disabled = true;
+    btn.textContent = "جاري الإنشاء...";
+    try {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    } catch (e) {
+      showAuthError(getAuthError(e.code));
+      btn.disabled = false;
+      btn.textContent = "إنشاء حساب";
+    }
+  };
+
+  window.doLogout = async () => {
+    await signOut(auth);
+    scripts = [];
+  };
+
+  function showAuthError(msg) {
+    const el = document.getElementById("authError");
+    el.textContent = msg;
+    el.style.display = "block";
   }
 
-  function save() { localStorage.setItem("scripts", JSON.stringify(scripts)); }
+  function getAuthError(code) {
+    const errors = {
+      "auth/user-not-found": "ما في حساب بهذا الإيميل",
+      "auth/wrong-password": "كلمة المرور غلط",
+      "auth/email-already-in-use": "الإيميل مستخدم بحساب ثاني",
+      "auth/invalid-email": "الإيميل غير صحيح",
+      "auth/weak-password": "كلمة المرور ضعيفة",
+      "auth/invalid-credential": "الإيميل أو كلمة المرور غلط",
+    };
+    return errors[code] || "صار خطأ، حاول مرة ثانية";
+  }
 
-  function showToast(msg) {
+  // ===== FIRESTORE =====
+  async function loadScripts() {
+    try {
+      const q = query(
+        collection(db, "scripts"),
+        where("uid", "==", currentUser.uid)
+      );
+      const snap = await getDocs(q);
+      scripts = snap.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
+      scripts.sort((a, b) => b.id - a.id);
+    } catch { scripts = []; }
+  }
+
+  async function saveToFirestore(script) {
+    try {
+      if (script.firestoreId) {
+        await updateDoc(doc(db, "scripts", script.firestoreId), script);
+        return script.firestoreId;
+      } else {
+        const ref = await addDoc(collection(db, "scripts"), { ...script, uid: currentUser.uid });
+        return ref.id;
+      }
+    } catch (e) { console.error(e); }
+  }
+
+  async function deleteFromFirestore(firestoreId) {
+    try { await deleteDoc(doc(db, "scripts", firestoreId)); } catch {}
+  }
+
+  // ===== APP FUNCTIONS =====
+  window.showToast = (msg) => {
     const t = document.getElementById("toast");
     t.textContent = msg;
     t.style.display = "block";
     setTimeout(() => t.style.display = "none", 2500);
-  }
+  };
 
-  function showView(view) {
+  window.showView = (view) => {
     document.getElementById("listView").classList.toggle("hidden", view !== "list");
     document.getElementById("formView").classList.toggle("hidden", view !== "form");
     document.getElementById("detailView").classList.toggle("hidden", view !== "detail");
     document.getElementById("newBtn").classList.toggle("hidden", view !== "list");
+    document.getElementById("logoutBtn").classList.toggle("hidden", view !== "list");
     document.getElementById("backBtn").classList.toggle("hidden", view === "list");
     if (view === "list") renderList();
     if (view === "form") initAutoResize();
-  }
+  };
 
   function initAutoResize() {
     setTimeout(() => {
       document.querySelectorAll("textarea").forEach(tx => {
         tx.style.height = "auto";
         tx.style.height = tx.scrollHeight + "px";
-        tx.addEventListener("input", function () {
+        tx.oninput = function () {
           this.style.height = "auto";
           this.style.height = this.scrollHeight + "px";
-        });
+        };
       });
     }, 50);
   }
 
-  function renderPills() {
-    const pills = ["الكل", "شورتس", "ريلز", "تيك توك", "يوتيوب"];
-    document.getElementById("pills").innerHTML = pills.map(p => `
-      <button class="pill ${filterPlatform === p ? 'active' : ''}" onclick="setFilter('${p}')">${p}</button>
-    `).join("");
-  }
-
-  function setFilter(p) { filterPlatform = p; renderList(); }
-
-  function renderStats() {
-    const platforms = ["شورتس", "ريلز", "تيك توك", "يوتيوب"];
-    document.getElementById("statsRow").innerHTML = `
-      <div class="stat">
-        <span class="stat-num">${scripts.length}</span>
-        <span class="stat-label">سكربت</span>
-      </div>
-      ${platforms.map(p => `
-        <div class="stat">
-          <span class="stat-num">${scripts.filter(s => s.platform === p).length}</span>
-          <span class="stat-label">${p}</span>
-        </div>
-      `).join("")}
-    `;
-  }
-
-  function wordCount(text) {
-    return text.trim().split(/\s+/).filter(Boolean).length;
-  }
-
-  function renderList() {
+  window.renderList = () => {
     renderPills();
     renderStats();
     const search = document.getElementById("searchInput").value;
@@ -576,8 +863,7 @@
           <div class="empty-icon">📝</div>
           <div class="empty-text">${scripts.length === 0 ? "ما عندك سكربتات بعد، ابدأ الحين!" : "ما لقينا نتائج"}</div>
           ${scripts.length === 0 ? `<button class="empty-btn" onclick="openForm(null)">+ أضف أول سكربت</button>` : ""}
-        </div>
-      `;
+        </div>`;
       return;
     }
 
@@ -585,24 +871,41 @@
       const color = PLATFORM_COLORS[s.platform];
       const total = wordCount(s.hook + " " + s.value + " " + s.result + " " + s.cta);
       return `
-        <div class="card" onclick="openDetail(${s.id})">
+        <div class="card" onclick="openDetail('${s.firestoreId}')">
           <div class="card-top">
             <span class="platform-badge" style="background:${color}20;color:${color};border:1px solid ${color}40">${s.platform}</span>
             <span class="cat-badge">${s.category}</span>
             <span class="date-text">${s.date}</span>
           </div>
           <div class="card-title">${s.title}</div>
-          ${s.hook ? `<div class="card-hook">🔴 ${s.hook.slice(0, 80)}${s.hook.length > 80 ? "..." : ""}</div>` : ""}
-          <div class="card-footer">
-            <span class="word-count">${total} كلمة</span>
-          </div>
-        </div>
-      `;
+          ${s.hook ? `<div class="card-hook">🔴 ${s.hook.slice(0,80)}${s.hook.length>80?"...":""}</div>` : ""}
+          <div class="card-footer"><span class="word-count">${total} كلمة</span></div>
+        </div>`;
     }).join("");
+  };
+
+  function renderPills() {
+    const pills = ["الكل","شورتس","ريلز","تيك توك","يوتيوب"];
+    document.getElementById("pills").innerHTML = pills.map(p =>
+      `<button class="pill ${filterPlatform===p?'active':''}" onclick="setFilter('${p}')">${p}</button>`
+    ).join("");
   }
 
-  function openForm(script) {
-    editingId = script ? script.id : null;
+  window.setFilter = (p) => { filterPlatform = p; renderList(); };
+
+  function renderStats() {
+    const platforms = ["شورتس","ريلز","تيك توك","يوتيوب"];
+    document.getElementById("statsRow").innerHTML = `
+      <div class="stat"><span class="stat-num">${scripts.length}</span><span class="stat-label">سكربت</span></div>
+      ${platforms.map(p=>`<div class="stat"><span class="stat-num">${scripts.filter(s=>s.platform===p).length}</span><span class="stat-label">${p}</span></div>`).join("")}`;
+  }
+
+  function wordCount(text) {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  }
+
+  window.openForm = (script) => {
+    editingId = script ? script.firestoreId : null;
     document.getElementById("formTitle").textContent = script ? "✏️ تعديل السكربت" : "✨ سكربت جديد";
     document.getElementById("fTitle").value = script?.title || "";
     document.getElementById("fPlatform").value = script?.platform || "شورتس";
@@ -612,14 +915,20 @@
     document.getElementById("fResult").value = script?.result || "";
     document.getElementById("fCta").value = script?.cta || "";
     showView("form");
-  }
+  };
 
-  function saveScript() {
+  window.saveScript = async () => {
     const title = document.getElementById("fTitle").value.trim();
     if (!title) return showToast("⚠️ حط عنوان للسكربت");
 
+    const btn = document.querySelector(".save-btn");
+    btn.disabled = true;
+    btn.textContent = "يحفظ...";
+
+    const existing = editingId ? scripts.find(s => s.firestoreId === editingId) : null;
     const script = {
-      id: editingId || Date.now(),
+      id: existing?.id || Date.now(),
+      firestoreId: editingId || null,
       title,
       platform: document.getElementById("fPlatform").value,
       category: document.getElementById("fCategory").value,
@@ -627,64 +936,58 @@
       value: document.getElementById("fValue").value,
       result: document.getElementById("fResult").value,
       cta: document.getElementById("fCta").value,
-      date: editingId
-        ? scripts.find(s => s.id === editingId)?.date
-        : new Date().toLocaleDateString("ar-IQ"),
+      date: existing?.date || new Date().toLocaleDateString("ar-IQ"),
+      uid: currentUser.uid,
     };
 
+    const firestoreId = await saveToFirestore(script);
+    script.firestoreId = firestoreId;
+
     if (editingId) {
-      scripts = scripts.map(s => s.id === editingId ? script : s);
+      scripts = scripts.map(s => s.firestoreId === editingId ? script : s);
     } else {
       scripts.unshift(script);
     }
 
-    save();
+    btn.disabled = false;
+    btn.textContent = "💾 حفظ السكربت";
     showToast("✅ تم الحفظ!");
     showView("list");
-  }
+  };
 
-  function openDetail(id) {
-    currentScript = scripts.find(s => s.id === id);
+  window.openDetail = (firestoreId) => {
+    currentScript = scripts.find(s => s.firestoreId === firestoreId);
     if (!currentScript) return;
-
     const color = PLATFORM_COLORS[currentScript.platform];
     document.getElementById("dBadges").innerHTML = `
       <span class="platform-badge" style="background:${color}20;color:${color};border:1px solid ${color}40">${currentScript.platform}</span>
-      <span class="cat-badge" style="margin-right:8px">${currentScript.category}</span>
-    `;
+      <span class="cat-badge" style="margin-right:8px">${currentScript.category}</span>`;
     document.getElementById("dDate").textContent = currentScript.date;
     document.getElementById("dTitle").textContent = currentScript.title;
-
     const sections = [
-      { key: "hook", label: "🔴 Hook", color: "#f43f5e" },
-      { key: "value", label: "📦 Value", color: "#3b82f6" },
-      { key: "result", label: "🎯 Result", color: "#10b981" },
-      { key: "cta", label: "📢 CTA", color: "#a855f7" },
+      { key:"hook", label:"🔴 Hook", color:"#f43f5e" },
+      { key:"value", label:"📦 Value", color:"#3b82f6" },
+      { key:"result", label:"🎯 Result", color:"#10b981" },
+      { key:"cta", label:"📢 CTA", color:"#a855f7" },
     ];
-
     document.getElementById("dSections").innerHTML = sections
       .filter(s => currentScript[s.key])
       .map(s => `
         <div class="section" style="border-color:${s.color}40">
           <div class="section-label" style="color:${s.color}">${s.label}</div>
           <div class="section-text">${currentScript[s.key]}</div>
-        </div>
-      `).join("");
-
+        </div>`).join("");
     showView("detail");
-  }
+  };
 
-  function deleteScript() {
+  window.deleteScript = async () => {
     if (!currentScript) return;
-    scripts = scripts.filter(s => s.id !== currentScript.id);
-    save();
+    await deleteFromFirestore(currentScript.firestoreId);
+    scripts = scripts.filter(s => s.firestoreId !== currentScript.firestoreId);
     showToast("🗑️ تم الحذف");
     currentScript = null;
     showView("list");
-  }
-
-  load();
-  renderList();
+  };
 </script>
 </body>
 </html>
