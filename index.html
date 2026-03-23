@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مكتبة سكربتاتي</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Tajawal', 'Cairo', sans-serif;
+      background: #f8f7f4;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1a2e;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px #0004;
+    }
+
+    .header-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+
+    .logo { display: flex; align-items: center; gap: 8px; }
+    .logo-icon { font-size: 22px; }
+    .logo-text { font-size: 18px; font-weight: 700; color: #fff; }
+
+    .new-btn {
+      background: #e63946;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .back-btn {
+      background: transparent;
+      color: #aaa;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 7px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .container { max-width: 700px; margin: 0 auto; padding: 16px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a2e;
+      color: #fff;
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-size: 15px;
+      z-index: 999;
+      box-shadow: 0 4px 24px #0004;
+      display: none;
+    }
+
+    /* Search & Filter */
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1.5px solid #e0e0e0;
+      font-size: 15px;
+      font-family: inherit;
+      direction: rtl;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+    .pill {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid #e0e0e0;
+      background: #fff;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .pill.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+
+    /* Stats */
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+
+    .stat {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 18px;
+      text-align: center;
+      min-width: 70px;
+      box-shadow: 0 1px 4px #0001;
+    }
+
+    .stat-num { display: block; font-size: 22px; font-weight: 800; color: #1a1a2e; }
+    .stat-label { display: block; font-size: 11px; color: #888; margin-top: 2px; }
+
+    /* Empty */
+    .empty { text-align: center; padding: 60px 20px; color: #aaa; }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-text { font-size: 16px; margin-bottom: 20px; }
+    .empty-btn {
+      background: #e63946;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-family: inherit;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    /* Cards */
+    .grid { display: flex; flex-direction: column; gap: 12px; }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 1px 6px #0001;
+      border: 1.5px solid #f0f0f0;
+      transition: box-shadow .2s;
+    }
+
+    .card:hover { box-shadow: 0 4px 16px #0002; }
+
+    .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+
+    .platform-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .cat-badge {
+      font-size: 11px;
+      background: #f0f4ff;
+      color: #2563eb;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .date-text { font-size: 11px; color: #bbb; margin-right: auto; }
+    .card-title { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+    .card-hook { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: 8px; }
+    .card-footer { border-top: 1px solid #f0f0f0; padding-top: 8px; }
+    .word-count { font-size: 11px; color: #bbb; }
+
+    /* Form */
+    .form-wrap {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 2px 12px #0001;
+    }
+
+    .form-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #1a1a2e; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 6px;
+      margin-top: 14px;
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #e0e0e0;
+      font-size: 15px;
+      font-family: inherit;
+      direction: rtl;
+      background: #fff;
+    }
+
+    textarea {
+      resize: vertical;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .row2 { display: flex; gap: 12px; }
+    .row2 > div { flex: 1; }
+
+    .form-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
+
+    .cancel-btn {
+      padding: 11px 22px;
+      border-radius: 12px;
+      border: 1.5px solid #e0e0e0;
+      background: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .save-btn {
+      padding: 11px 24px;
+      border-radius: 12px;
+      border: none;
+      background: #1a1a2e;
+      color: #fff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .delete-btn {
+      padding: 11px 20px;
+      border-radius: 12px;
+      border: 1.5px solid #fecaca;
+      background: #fff5f5;
+      color: #e63946;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      padding: 11px 24px;
+      border-radius: 12px;
+      border: none;
+      background: #1a1a2e;
+      color: #fff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Detail */
+    .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .detail-date { font-size: 12px; color: #bbb; }
+    .detail-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; color: #1a1a2e; }
+
+    .section {
+      border-radius: 12px;
+      border: 1.5px solid;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+    }
+
+    .section-label { font-size: 12px; font-weight: 800; margin-bottom: 6px; }
+    .section-text { font-size: 15px; line-height: 1.8; color: #333; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">🎬</span>
+      <span class="logo-text">مكتبة سكربتاتي</span>
+    </div>
+    <button class="new-btn" id="newBtn" onclick="openForm(null)">+ سكربت جديد</button>
+    <button class="back-btn hidden" id="backBtn" onclick="showView('list')">→ الرجوع</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- LIST VIEW -->
+  <div id="listView">
+    <input class="search-input" id="searchInput" placeholder="🔍 دور على سكربت..." oninput="renderList()" />
+    <div class="pills" id="pills"></div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- FORM VIEW -->
+  <div id="formView" class="hidden">
+    <div class="form-wrap">
+      <div class="form-title" id="formTitle">✨ سكربت جديد</div>
+
+      <label>العنوان</label>
+      <input type="text" id="fTitle" placeholder="اسم الفيديو أو الموضوع..." />
+
+      <div class="row2">
+        <div>
+          <label>المنصة</label>
+          <select id="fPlatform">
+            <option>شورتس</option>
+            <option>ريلز</option>
+            <option>تيك توك</option>
+            <option>يوتيوب</option>
+          </select>
+        </div>
+        <div>
+          <label>التصنيف</label>
+          <select id="fCategory">
+            <option>تقني</option>
+            <option>تعليمي</option>
+            <option>ترفيهي</option>
+            <option>نصائح</option>
+          </select>
+        </div>
+      </div>
+
+      <label>🔴 Hook — الخطاف (0-3 ثواني)</label>
+      <textarea id="fHook" rows="2" placeholder="الجملة الأولى اللي تجذب المشاهد..."></textarea>
+
+      <label>📦 Value — المحتوى</label>
+      <textarea id="fValue" rows="4" placeholder="الخطوات أو المعلومات..."></textarea>
+
+      <label>🎯 Result — النتيجة</label>
+      <textarea id="fResult" rows="2" placeholder="شو بيصير بعد ما يطبق الشخص؟"></textarea>
+
+      <label>📢 CTA — الدعوة للتفاعل</label>
+      <textarea id="fCta" rows="2" placeholder="احفظ، شير، كومنت..."></textarea>
+
+      <div class="form-actions">
+        <button class="cancel-btn" onclick="showView('list')">إلغاء</button>
+        <button class="save-btn" onclick="saveScript()">💾 حفظ السكربت</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL VIEW -->
+  <div id="detailView" class="hidden">
+    <div class="form-wrap">
+      <div class="detail-header">
+        <div id="dBadges"></div>
+        <div class="detail-date" id="dDate"></div>
+      </div>
+      <div class="detail-title" id="dTitle"></div>
+      <div id="dSections"></div>
+      <div class="form-actions">
+        <button class="delete-btn" onclick="deleteScript()">🗑️ حذف</button>
+        <button class="edit-btn" onclick="openForm(currentScript)">✏️ تعديل</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const PLATFORM_COLORS = {
+    "شورتس": "#FF0000",
+    "ريلز": "#E1306C",
+    "تيك توك": "#555555",
+    "يوتيوب": "#FF0000",
+  };
+
+  let scripts = [];
+  let filterPlatform = "الكل";
+  let currentScript = null;
+  let editingId = null;
+
+  // Load from localStorage
+  function load() {
+    try {
+      scripts = JSON.parse(localStorage.getItem("scripts") || "[]");
+    } catch { scripts = []; }
+  }
+
+  function save() {
+    localStorage.setItem("scripts", JSON.stringify(scripts));
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 2500);
+  }
+
+  function showView(view) {
+    document.getElementById("listView").classList.toggle("hidden", view !== "list");
+    document.getElementById("formView").classList.toggle("hidden", view !== "form");
+    document.getElementById("detailView").classList.toggle("hidden", view !== "detail");
+    document.getElementById("newBtn").classList.toggle("hidden", view !== "list");
+    document.getElementById("backBtn").classList.toggle("hidden", view === "list");
+    if (view === "list") renderList();
+  }
+
+  function renderPills() {
+    const pills = ["الكل", "شورتس", "ريلز", "تيك توك", "يوتيوب"];
+    document.getElementById("pills").innerHTML = pills.map(p => `
+      <button class="pill ${filterPlatform === p ? 'active' : ''}" onclick="setFilter('${p}')">${p}</button>
+    `).join("");
+  }
+
+  function setFilter(p) {
+    filterPlatform = p;
+    renderList();
+  }
+
+  function renderStats() {
+    const platforms = ["شورتس", "ريلز", "تيك توك", "يوتيوب"];
+    document.getElementById("statsRow").innerHTML = `
+      <div class="stat">
+        <span class="stat-num">${scripts.length}</span>
+        <span class="stat-label">سكربت</span>
+      </div>
+      ${platforms.map(p => `
+        <div class="stat">
+          <span class="stat-num">${scripts.filter(s => s.platform === p).length}</span>
+          <span class="stat-label">${p}</span>
+        </div>
+      `).join("")}
+    `;
+  }
+
+  function wordCount(text) {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  }
+
+  function renderList() {
+    renderPills();
+    renderStats();
+    const search = document.getElementById("searchInput").value;
+    const filtered = scripts.filter(s => {
+      const matchSearch = !search ||
+        s.title.includes(search) ||
+        s.hook.includes(search) ||
+        s.value.includes(search);
+      const matchPlatform = filterPlatform === "الكل" || s.platform === filterPlatform;
+      return matchSearch && matchPlatform;
+    });
+
+    if (filtered.length === 0) {
+      document.getElementById("grid").innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">📝</div>
+          <div class="empty-text">${scripts.length === 0 ? "ما عندك سكربتات بعد، ابدأ الحين!" : "ما لقينا نتائج"}</div>
+          ${scripts.length === 0 ? `<button class="empty-btn" onclick="openForm(null)">+ أضف أول سكربت</button>` : ""}
+        </div>
+      `;
+      return;
+    }
+
+    document.getElementById("grid").innerHTML = filtered.map(s => {
+      const color = PLATFORM_COLORS[s.platform];
+      const total = wordCount(s.hook + " " + s.value + " " + s.result + " " + s.cta);
+      return `
+        <div class="card" onclick="openDetail(${s.id})">
+          <div class="card-top">
+            <span class="platform-badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${s.platform}</span>
+            <span class="cat-badge">${s.category}</span>
+            <span class="date-text">${s.date}</span>
+          </div>
+          <div class="card-title">${s.title}</div>
+          ${s.hook ? `<div class="card-hook">🔴 ${s.hook.slice(0, 80)}${s.hook.length > 80 ? "..." : ""}</div>` : ""}
+          <div class="card-footer">
+            <span class="word-count">${total} كلمة</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function openForm(script) {
+    editingId = script ? script.id : null;
+    document.getElementById("formTitle").textContent = script ? "✏️ تعديل السكربت" : "✨ سكربت جديد";
+    document.getElementById("fTitle").value = script?.title || "";
+    document.getElementById("fPlatform").value = script?.platform || "شورتس";
+    document.getElementById("fCategory").value = script?.category || "تقني";
+    document.getElementById("fHook").value = script?.hook || "";
+    document.getElementById("fValue").value = script?.value || "";
+    document.getElementById("fResult").value = script?.result || "";
+    document.getElementById("fCta").value = script?.cta || "";
+    showView("form");
+  }
+
+  function saveScript() {
+    const title = document.getElementById("fTitle").value.trim();
+    if (!title) return showToast("⚠️ حط عنوان للسكربت");
+
+    const script = {
+      id: editingId || Date.now(),
+      title,
+      platform: document.getElementById("fPlatform").value,
+      category: document.getElementById("fCategory").value,
+      hook: document.getElementById("fHook").value,
+      value: document.getElementById("fValue").value,
+      result: document.getElementById("fResult").value,
+      cta: document.getElementById("fCta").value,
+      date: editingId
+        ? scripts.find(s => s.id === editingId)?.date
+        : new Date().toLocaleDateString("ar-IQ"),
+    };
+
+    if (editingId) {
+      scripts = scripts.map(s => s.id === editingId ? script : s);
+    } else {
+      scripts.unshift(script);
+    }
+
+    save();
+    showToast("✅ تم الحفظ!");
+    showView("list");
+  }
+
+  function openDetail(id) {
+    currentScript = scripts.find(s => s.id === id);
+    if (!currentScript) return;
+
+    const color = PLATFORM_COLORS[currentScript.platform];
+    document.getElementById("dBadges").innerHTML = `
+      <span class="platform-badge" style="background:#f0f0f0;color:#555;border:1px solid #ddd">${currentScript.platform}</span>
+      <span class="cat-badge" style="margin-right:8px">${currentScript.category}</span>
+    `;
+    document.getElementById("dDate").textContent = currentScript.date;
+    document.getElementById("dTitle").textContent = currentScript.title;
+
+    const sections = [
+      { key: "hook", label: "🔴 Hook", color: "#ff4444" },
+      { key: "value", label: "📦 Value", color: "#2563eb" },
+      { key: "result", label: "🎯 Result", color: "#16a34a" },
+      { key: "cta", label: "📢 CTA", color: "#7c3aed" },
+    ];
+
+    document.getElementById("dSections").innerHTML = sections
+      .filter(s => currentScript[s.key])
+      .map(s => `
+        <div class="section" style="border-color:${s.color}33">
+          <div class="section-label" style="color:${s.color}">${s.label}</div>
+          <div class="section-text">${currentScript[s.key]}</div>
+        </div>
+      `).join("");
+
+    showView("detail");
+  }
+
+  function deleteScript() {
+    if (!currentScript) return;
+    scripts = scripts.filter(s => s.id !== currentScript.id);
+    save();
+    showToast("🗑️ تم الحذف");
+    currentScript = null;
+    showView("list");
+  }
+
+  // Init
+  load();
+  renderList();
+</script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
