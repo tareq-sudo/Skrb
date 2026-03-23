@@ -1,15 +1,4 @@
 <!DOCTYPE html>
-<html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <title>Untitled</title>
-    
-
-  </head>
-    
-  <body>
-  <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
@@ -72,7 +61,6 @@
 
     .container { max-width: 700px; margin: 0 auto; padding: 16px; }
 
-    /* Toast */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -88,7 +76,6 @@
       display: none;
     }
 
-    /* Search & Filter */
     .search-input {
       width: 100%;
       padding: 10px 14px;
@@ -115,7 +102,6 @@
 
     .pill.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
 
-    /* Stats */
     .stats-row {
       display: flex;
       gap: 10px;
@@ -135,7 +121,6 @@
     .stat-num { display: block; font-size: 22px; font-weight: 800; color: #1a1a2e; }
     .stat-label { display: block; font-size: 11px; color: #888; margin-top: 2px; }
 
-    /* Empty */
     .empty { text-align: center; padding: 60px 20px; color: #aaa; }
     .empty-icon { font-size: 48px; margin-bottom: 12px; }
     .empty-text { font-size: 16px; margin-bottom: 20px; }
@@ -150,7 +135,6 @@
       cursor: pointer;
     }
 
-    /* Cards */
     .grid { display: flex; flex-direction: column; gap: 12px; }
 
     .card {
@@ -188,7 +172,6 @@
     .card-footer { border-top: 1px solid #f0f0f0; padding-top: 8px; }
     .word-count { font-size: 11px; color: #bbb; }
 
-    /* Form */
     .form-wrap {
       background: #fff;
       border-radius: 20px;
@@ -219,9 +202,11 @@
     }
 
     textarea {
-      resize: vertical;
+      resize: none;
       line-height: 1.7;
       font-size: 14px;
+      overflow: hidden;
+      min-height: 80px;
     }
 
     .row2 { display: flex; gap: 12px; }
@@ -274,7 +259,6 @@
       cursor: pointer;
     }
 
-    /* Detail */
     .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .detail-date { font-size: 12px; color: #bbb; }
     .detail-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; color: #1a1a2e; }
@@ -287,7 +271,7 @@
     }
 
     .section-label { font-size: 12px; font-weight: 800; margin-bottom: 6px; }
-    .section-text { font-size: 15px; line-height: 1.8; color: #333; }
+    .section-text { font-size: 15px; line-height: 1.8; color: #333; white-space: pre-wrap; }
 
     .hidden { display: none; }
   </style>
@@ -347,16 +331,16 @@
       </div>
 
       <label>🔴 Hook — الخطاف (0-3 ثواني)</label>
-      <textarea id="fHook" rows="2" placeholder="الجملة الأولى اللي تجذب المشاهد..."></textarea>
+      <textarea id="fHook" placeholder="الجملة الأولى اللي تجذب المشاهد..."></textarea>
 
       <label>📦 Value — المحتوى</label>
-      <textarea id="fValue" rows="4" placeholder="الخطوات أو المعلومات..."></textarea>
+      <textarea id="fValue" placeholder="الخطوات أو المعلومات..."></textarea>
 
       <label>🎯 Result — النتيجة</label>
-      <textarea id="fResult" rows="2" placeholder="شو بيصير بعد ما يطبق الشخص؟"></textarea>
+      <textarea id="fResult" placeholder="شو بيصير بعد ما يطبق الشخص؟"></textarea>
 
       <label>📢 CTA — الدعوة للتفاعل</label>
-      <textarea id="fCta" rows="2" placeholder="احفظ، شير، كومنت..."></textarea>
+      <textarea id="fCta" placeholder="احفظ، شير، كومنت..."></textarea>
 
       <div class="form-actions">
         <button class="cancel-btn" onclick="showView('list')">إلغاء</button>
@@ -396,7 +380,6 @@
   let currentScript = null;
   let editingId = null;
 
-  // Load from localStorage
   function load() {
     try {
       scripts = JSON.parse(localStorage.getItem("scripts") || "[]");
@@ -421,6 +404,20 @@
     document.getElementById("newBtn").classList.toggle("hidden", view !== "list");
     document.getElementById("backBtn").classList.toggle("hidden", view === "list");
     if (view === "list") renderList();
+    if (view === "form") initAutoResize();
+  }
+
+  function initAutoResize() {
+    setTimeout(() => {
+      document.querySelectorAll("textarea").forEach(tx => {
+        tx.style.height = "auto";
+        tx.style.height = tx.scrollHeight + "px";
+        tx.addEventListener("input", function () {
+          this.style.height = "auto";
+          this.style.height = this.scrollHeight + "px";
+        });
+      });
+    }, 50);
   }
 
   function renderPills() {
@@ -586,8 +583,4 @@
   renderList();
 </script>
 </body>
-</html>
-    
-  </body>
-  
 </html>
