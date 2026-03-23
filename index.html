@@ -545,13 +545,11 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- LOADING -->
 <div id="loadingScreen" class="loading-screen">
   <div class="spinner"></div>
   <div style="color:var(--text3);font-size:14px">جاري التحميل...</div>
 </div>
 
-<!-- AUTH SCREEN -->
 <div id="authScreen" class="hidden">
   <div class="auth-box">
     <div class="auth-logo">
@@ -584,7 +582,6 @@
   </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="appScreen" class="hidden">
   <header>
     <div class="header-inner">
@@ -602,7 +599,6 @@
   </header>
 
   <div class="container">
-    <!-- LIST VIEW -->
     <div id="listView">
       <input class="search-input" id="searchInput" placeholder="🔍 دور على سكربت..." oninput="renderList()" />
       <div class="pills" id="pills"></div>
@@ -610,7 +606,6 @@
       <div class="grid" id="grid"></div>
     </div>
 
-    <!-- FORM VIEW -->
     <div id="formView" class="hidden">
       <div class="form-wrap">
         <div class="form-title" id="formTitle">✨ سكربت جديد</div>
@@ -647,7 +642,6 @@
       </div>
     </div>
 
-    <!-- DETAIL VIEW -->
     <div id="detailView" class="hidden">
       <div class="form-wrap">
         <div class="detail-header">
@@ -665,7 +659,6 @@
   </div>
 </div>
 
-<!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import {
@@ -712,6 +705,7 @@
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("appScreen").classList.remove("hidden");
+      // Load scripts first
       await loadScripts();
       renderList();
     } else {
@@ -740,6 +734,7 @@
     try {
       await signInWithEmailAndPassword(auth, email, pass);
     } catch (e) {
+      console.error("Auth Error:", e);
       showAuthError(getAuthError(e.code));
       btn.disabled = false;
       btn.textContent = "دخول";
@@ -757,6 +752,7 @@
     try {
       await createUserWithEmailAndPassword(auth, email, pass);
     } catch (e) {
+      console.error("Register Error:", e);
       showAuthError(getAuthError(e.code));
       btn.disabled = false;
       btn.textContent = "إنشاء حساب";
@@ -782,12 +778,14 @@
       "auth/invalid-email": "الإيميل غير صحيح",
       "auth/weak-password": "كلمة المرور ضعيفة",
       "auth/invalid-credential": "الإيميل أو كلمة المرور غلط",
+      "auth/operation-not-allowed": "تأكد من تفعيل Email/Password في Firebase",
     };
     return errors[code] || "صار خطأ، حاول مرة ثانية";
   }
 
   // ===== FIRESTORE =====
   async function loadScripts() {
+    if (!currentUser) return;
     try {
       const q = query(
         collection(db, "scripts"),
@@ -796,23 +794,27 @@
       const snap = await getDocs(q);
       scripts = snap.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
       scripts.sort((a, b) => b.id - a.id);
-    } catch { scripts = []; }
+    } catch (e) { 
+      console.error("Firestore Error:", e);
+      scripts = []; 
+    }
   }
 
   async function saveToFirestore(script) {
     try {
       if (script.firestoreId) {
-        await updateDoc(doc(db, "scripts", script.firestoreId), script);
-        return script.firestoreId;
+        const { firestoreId, ...data } = script;
+        await updateDoc(doc(db, "scripts", firestoreId), data);
+        return firestoreId;
       } else {
         const ref = await addDoc(collection(db, "scripts"), { ...script, uid: currentUser.uid });
         return ref.id;
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Save Error:", e); }
   }
 
   async function deleteFromFirestore(firestoreId) {
-    try { await deleteDoc(doc(db, "scripts", firestoreId)); } catch {}
+    try { await deleteDoc(doc(db, "scripts", firestoreId)); } catch (e) { console.error("Delete Error:", e); }
   }
 
   // ===== APP FUNCTIONS =====
@@ -852,13 +854,14 @@
     renderStats();
     const search = document.getElementById("searchInput").value;
     const filtered = scripts.filter(s => {
-      const matchSearch = !search || s.title.includes(search) || s.hook.includes(search) || s.value.includes(search);
+      const matchSearch = !search || s.title.includes(search) || (s.hook && s.hook.includes(search));
       const matchPlatform = filterPlatform === "الكل" || s.platform === filterPlatform;
       return matchSearch && matchPlatform;
     });
 
+    const grid = document.getElementById("grid");
     if (filtered.length === 0) {
-      document.getElementById("grid").innerHTML = `
+      grid.innerHTML = `
         <div class="empty">
           <div class="empty-icon">📝</div>
           <div class="empty-text">${scripts.length === 0 ? "ما عندك سكربتات بعد، ابدأ الحين!" : "ما لقينا نتائج"}</div>
@@ -867,9 +870,9 @@
       return;
     }
 
-    document.getElementById("grid").innerHTML = filtered.map(s => {
-      const color = PLATFORM_COLORS[s.platform];
-      const total = wordCount(s.hook + " " + s.value + " " + s.result + " " + s.cta);
+    grid.innerHTML = filtered.map(s => {
+      const color = PLATFORM_COLORS[s.platform] || "#a855f7";
+      const total = wordCount((s.hook || "") + " " + (s.value || "") + " " + (s.result || "") + " " + (s.cta || ""));
       return `
         <div class="card" onclick="openDetail('${s.firestoreId}')">
           <div class="card-top">
@@ -925,10 +928,7 @@
     btn.disabled = true;
     btn.textContent = "يحفظ...";
 
-    const existing = editingId ? scripts.find(s => s.firestoreId === editingId) : null;
     const script = {
-      id: existing?.id || Date.now(),
-      firestoreId: editingId || null,
       title,
       platform: document.getElementById("fPlatform").value,
       category: document.getElementById("fCategory").value,
@@ -936,29 +936,33 @@
       value: document.getElementById("fValue").value,
       result: document.getElementById("fResult").value,
       cta: document.getElementById("fCta").value,
-      date: existing?.date || new Date().toLocaleDateString("ar-IQ"),
+      date: new Date().toLocaleDateString("ar-IQ"),
       uid: currentUser.uid,
+      id: editingId ? scripts.find(s => s.firestoreId === editingId).id : Date.now()
     };
 
-    const firestoreId = await saveToFirestore(script);
-    script.firestoreId = firestoreId;
+    if (editingId) script.firestoreId = editingId;
 
-    if (editingId) {
-      scripts = scripts.map(s => s.firestoreId === editingId ? script : s);
-    } else {
-      scripts.unshift(script);
+    const firestoreId = await saveToFirestore(script);
+    if (firestoreId) {
+      script.firestoreId = firestoreId;
+      if (editingId) {
+        scripts = scripts.map(s => s.firestoreId === editingId ? script : s);
+      } else {
+        scripts.unshift(script);
+      }
+      showToast("✅ تم الحفظ!");
+      showView("list");
     }
 
     btn.disabled = false;
     btn.textContent = "💾 حفظ السكربت";
-    showToast("✅ تم الحفظ!");
-    showView("list");
   };
 
   window.openDetail = (firestoreId) => {
     currentScript = scripts.find(s => s.firestoreId === firestoreId);
     if (!currentScript) return;
-    const color = PLATFORM_COLORS[currentScript.platform];
+    const color = PLATFORM_COLORS[currentScript.platform] || "#a855f7";
     document.getElementById("dBadges").innerHTML = `
       <span class="platform-badge" style="background:${color}20;color:${color};border:1px solid ${color}40">${currentScript.platform}</span>
       <span class="cat-badge" style="margin-right:8px">${currentScript.category}</span>`;
@@ -981,11 +985,10 @@
   };
 
   window.deleteScript = async () => {
-    if (!currentScript) return;
+    if (!currentScript || !confirm("متأكد تبي تحذف السكربت؟")) return;
     await deleteFromFirestore(currentScript.firestoreId);
     scripts = scripts.filter(s => s.firestoreId !== currentScript.firestoreId);
     showToast("🗑️ تم الحذف");
-    currentScript = null;
     showView("list");
   };
 </script>
