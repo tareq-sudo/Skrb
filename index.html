@@ -553,7 +553,8 @@
     if (user) {
       currentUser = user;
       document.getElementById("userEmail").textContent = user.email;
-      document.getElementById("authScreen").classList.add("hidden");
+document.getElementById("authScreen").style.display = "none";
+
 document.getElementById("appScreen").style.display = "block";
 
       renderList();
@@ -563,7 +564,8 @@ document.getElementById("appScreen").style.display = "block";
       scripts = [];
 document.getElementById("appScreen").style.display = "none";
 
-      document.getElementById("authScreen").classList.remove("hidden");
+document.getElementById("authScreen").style.display = "flex";
+
     }
   });
 
