@@ -548,21 +548,21 @@
   let editingId = null;
   let currentUser = null;
 
-  onAuthStateChanged(auth, async (user) => {
-    if (user && !currentUser) {
+  onAuthStateChanged(auth, (user) => {
+    document.getElementById("loadingScreen").classList.add("hidden");
+    if (user) {
       currentUser = user;
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("appScreen").classList.remove("hidden");
-      await loadScripts();
       renderList();
-    } else if (!user) {
+      loadScripts().then(() => renderList()).catch(() => renderList());
+    } else {
       currentUser = null;
       scripts = [];
       document.getElementById("appScreen").classList.add("hidden");
       document.getElementById("authScreen").classList.remove("hidden");
     }
-    document.getElementById("loadingScreen").classList.add("hidden");
   });
 
   window.switchTab = (tab) => {
@@ -573,6 +573,7 @@
     document.getElementById("authError").style.display = "none";
   };
 
+  // ===== DEBUG: يظهر الخطأ الحقيقي على الشاشة =====
   window.doLogin = async () => {
     const email = document.getElementById("loginEmail").value.trim();
     const pass = document.getElementById("loginPass").value;
@@ -580,20 +581,11 @@
     if (!email || !pass) return showAuthError("حط الإيميل وكلمة المرور");
     btn.disabled = true;
     btn.textContent = "جاري الدخول...";
-    document.getElementById("authError").style.display = "none";
     try {
       const result = await signInWithEmailAndPassword(auth, email, pass);
-      // ✅ رسالة debug — إذا ظهرت يعني Firebase شغال
-      showAuthError("✅ دخل! الحين يحمل...");
-      currentUser = result.user;
-      document.getElementById("userEmail").textContent = result.user.email;
-      document.getElementById("authScreen").classList.add("hidden");
-      document.getElementById("appScreen").classList.remove("hidden");
-      await loadScripts();
-      renderList();
+      showAuthError("✅ نجح! uid: " + result.user.uid);
     } catch (e) {
-      // ✅ يظهر الكود الحقيقي للخطأ
-      showAuthError("كود: " + e.code + " | " + e.message);
+      showAuthError("❌ " + e.code + " | " + e.message);
       btn.disabled = false;
       btn.textContent = "دخول";
     }
@@ -608,20 +600,9 @@
     btn.disabled = true;
     btn.textContent = "جاري الإنشاء...";
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, pass);
-      currentUser = result.user;
-      document.getElementById("userEmail").textContent = result.user.email;
-      document.getElementById("authScreen").classList.add("hidden");
-      document.getElementById("appScreen").classList.remove("hidden");
-      scripts = [];
-      renderList();
+      await createUserWithEmailAndPassword(auth, email, pass);
     } catch (e) {
-      const msgs = {
-        "auth/email-already-in-use": "الإيميل مسجل مسبقاً",
-        "auth/invalid-email": "إيميل غير صحيح",
-        "auth/weak-password": "كلمة المرور ضعيفة",
-      };
-      showAuthError(msgs[e.code] || "كود: " + e.code + " | " + e.message);
+      showAuthError("❌ " + e.code + " | " + e.message);
       btn.disabled = false;
       btn.textContent = "إنشاء حساب";
     }
@@ -629,7 +610,6 @@
 
   window.doLogout = async () => {
     await signOut(auth);
-    currentUser = null;
     scripts = [];
   };
 
