@@ -95,7 +95,6 @@
 
     #appScreen { display: none; }
 
-    /* ===== HEADER ===== */
     header {
       background: rgba(26, 16, 48, 0.95);
       backdrop-filter: blur(20px);
@@ -141,7 +140,6 @@
       border-radius: 10px; padding: 7px 12px; font-family: inherit; font-size: 13px; cursor: pointer;
     }
 
-    /* إيميل المستخدم — مخفي على الشاشات الصغيرة */
     .user-email {
       font-size: 11px; color: var(--text3); padding: 5px 10px;
       background: var(--surface2); border-radius: 20px; border: 1px solid var(--border);
@@ -483,6 +481,13 @@
   window.doLogout = async () => {
     await signOut(auth);
     scripts = [];
+    const btn = document.getElementById("loginBtn");
+    btn.disabled = false;
+    btn.textContent = "دخول";
+    document.getElementById("loginEmail").value = "";
+    document.getElementById("loginPass").value = "";
+    document.getElementById("authError").style.display = "none";
+    switchTab("login");
   };
 
   function showAuthError(msg) {
@@ -510,9 +515,7 @@
       const snap = await getDocs(q);
       scripts = snap.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
       scripts.sort((a, b) => b.id - a.id);
-    } catch (e) {
-      scripts = [];
-    }
+    } catch (e) { scripts = []; }
   }
 
   async function saveToFirestore(script) {
@@ -548,21 +551,7 @@
     document.getElementById("logoutBtn").classList.toggle("hidden", view !== "list");
     document.getElementById("backBtn").classList.toggle("hidden", view === "list");
     if (view === "list") renderList();
-    if (view === "form") initAutoResize();
   };
-
-  function initAutoResize() {
-    setTimeout(() => {
-      document.querySelectorAll("textarea").forEach(tx => {
-        tx.style.height = "auto";
-        tx.style.height = tx.scrollHeight + "px";
-        tx.oninput = function () {
-          this.style.height = "auto";
-          this.style.height = this.scrollHeight + "px";
-        };
-      });
-    }, 50);
-  }
 
   window.renderList = () => {
     renderPills();
@@ -624,17 +613,28 @@
     return text.trim().split(/\s+/).filter(Boolean).length;
   }
 
+  // ===== التعديل هنا — يحط القيم بعد ما يظهر الفورم =====
   window.openForm = (script) => {
     editingId = script ? script.firestoreId : null;
-    document.getElementById("formTitle").textContent = script ? "✏️ تعديل السكربت" : "✨ سكربت جديد";
-    document.getElementById("fTitle").value = script?.title || "";
-    document.getElementById("fPlatform").value = script?.platform || "شورتس";
-    document.getElementById("fCategory").value = script?.category || "تقني";
-    document.getElementById("fHook").value = script?.hook || "";
-    document.getElementById("fValue").value = script?.value || "";
-    document.getElementById("fResult").value = script?.result || "";
-    document.getElementById("fCta").value = script?.cta || "";
     showView("form");
+    setTimeout(() => {
+      document.getElementById("formTitle").textContent = script ? "✏️ تعديل السكربت" : "✨ سكربت جديد";
+      document.getElementById("fTitle").value = script?.title || "";
+      document.getElementById("fPlatform").value = script?.platform || "شورتس";
+      document.getElementById("fCategory").value = script?.category || "تقني";
+      document.getElementById("fHook").value = script?.hook || "";
+      document.getElementById("fValue").value = script?.value || "";
+      document.getElementById("fResult").value = script?.result || "";
+      document.getElementById("fCta").value = script?.cta || "";
+      document.querySelectorAll("textarea").forEach(tx => {
+        tx.style.height = "auto";
+        tx.style.height = tx.scrollHeight + "px";
+        tx.oninput = function () {
+          this.style.height = "auto";
+          this.style.height = this.scrollHeight + "px";
+        };
+      });
+    }, 60);
   };
 
   window.saveScript = async () => {
