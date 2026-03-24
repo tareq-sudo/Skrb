@@ -501,7 +501,6 @@
         </div>
         <div class="detail-title" id="dTitle"></div>
         <div id="dSections"></div>
-        <!-- ✅ التعديل: أزرار التفاصيل تُبنى ديناميكياً في openDetail -->
         <div class="form-actions" id="detailActions"></div>
       </div>
     </div>
@@ -790,8 +789,8 @@
     btn.textContent = "💾 حفظ السكربت";
   };
 
-  // ✅ التعديل الرئيسي: بناء الأزرار ديناميكياً مع تمرير firestoreId مباشرة
   window.openDetail = (firestoreId) => {
+    // ✅ التعديل: نجيب السكربت ونحفظه في currentScript أول شي
     const script = scripts.find(s => s.firestoreId === firestoreId);
     if (!script) return;
     currentScript = script;
@@ -817,27 +816,23 @@
           <div class="section-text">${script[s.key]}</div>
         </div>`).join("");
 
-    // ✅ الأزرار تأخذ السكربت مباشرة من المصفوفة بدل الاعتماد على currentScript
+    // ✅ التعديل الرئيسي: الأزرار تستخدم currentScript مباشرة بعد ما تم تحديثه
     document.getElementById("detailActions").innerHTML = `
-      <button class="delete-btn" onclick="deleteScript('${firestoreId}')">🗑️ حذف</button>
-      <button class="edit-btn" onclick="openForm(scripts.find(s => s.firestoreId === '${firestoreId}'))">✏️ تعديل</button>
+      <button class="delete-btn" onclick="deleteScript()">🗑️ حذف</button>
+      <button class="edit-btn" onclick="openForm(currentScript)">✏️ تعديل</button>
     `;
 
     showView("detail");
   };
 
-  // ✅ تعديل deleteScript ليأخذ firestoreId كمعامل
-  window.deleteScript = async (firestoreId) => {
-    if (!confirm("متأكد تبي تحذف السكربت؟")) return;
-    await deleteFromFirestore(firestoreId);
-    scripts = scripts.filter(s => s.firestoreId !== firestoreId);
+  window.deleteScript = async () => {
+    if (!currentScript || !confirm("متأكد تبي تحذف السكربت؟")) return;
+    await deleteFromFirestore(currentScript.firestoreId);
+    scripts = scripts.filter(s => s.firestoreId !== currentScript.firestoreId);
     showToast("🗑️ تم الحذف");
     currentScript = null;
     showView("list");
   };
-
-  // ✅ تعليمة لاستخدامها في الـ HTML المضمّن
-  window.scripts = scripts;
 </script>
 </body>
 </html>
