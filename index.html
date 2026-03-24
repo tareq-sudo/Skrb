@@ -736,7 +736,8 @@
     return text.trim().split(/\s+/).filter(Boolean).length;
   }
 
-  window.openForm = (script) => {
+  // ✅ openForm تبقى عادية
+  function openForm(script) {
     editingId = script ? script.firestoreId : null;
     document.getElementById("formTitle").textContent = script ? "✏️ تعديل السكربت" : "✨ سكربت جديد";
     document.getElementById("fTitle").value = script?.title || "";
@@ -747,7 +748,10 @@
     document.getElementById("fResult").value = script?.result || "";
     document.getElementById("fCta").value = script?.cta || "";
     showView("form");
-  };
+  }
+
+  // نربطها بـ window بس للاستخدام من الـ HTML القديم
+  window.openForm = openForm;
 
   window.saveScript = async () => {
     const title = document.getElementById("fTitle").value.trim();
@@ -790,7 +794,6 @@
   };
 
   window.openDetail = (firestoreId) => {
-    // ✅ التعديل: نجيب السكربت ونحفظه في currentScript أول شي
     const script = scripts.find(s => s.firestoreId === firestoreId);
     if (!script) return;
     currentScript = script;
@@ -808,6 +811,7 @@
       { key:"result", label:"🎯 Result", color:"#10b981" },
       { key:"cta", label:"📢 CTA", color:"#a855f7" },
     ];
+
     document.getElementById("dSections").innerHTML = sections
       .filter(s => script[s.key])
       .map(s => `
@@ -816,23 +820,34 @@
           <div class="section-text">${script[s.key]}</div>
         </div>`).join("");
 
-    // ✅ التعديل الرئيسي: الأزرار تستخدم currentScript مباشرة بعد ما تم تحديثه
-    document.getElementById("detailActions").innerHTML = `
-      <button class="delete-btn" onclick="deleteScript()">🗑️ حذف</button>
-      <button class="edit-btn" onclick="openForm(currentScript)">✏️ تعديل</button>
+    // ✅ الحل النهائي: نبني الأزرار ونربطها بـ addEventListener داخل الـ module مباشرة
+    const actionsDiv = document.getElementById("detailActions");
+    actionsDiv.innerHTML = `
+      <button class="delete-btn" id="btnDelete">🗑️ حذف</button>
+      <button class="edit-btn" id="btnEdit">✏️ تعديل</button>
     `;
+
+    // ✅ هذا هو السر: addEventListener يشوف المتغيرات الداخلية للـ module
+    document.getElementById("btnEdit").addEventListener("click", () => {
+      openForm(currentScript);
+    });
+
+    document.getElementById("btnDelete").addEventListener("click", () => {
+      deleteCurrentScript();
+    });
 
     showView("detail");
   };
 
-  window.deleteScript = async () => {
+  async function deleteCurrentScript() {
     if (!currentScript || !confirm("متأكد تبي تحذف السكربت؟")) return;
     await deleteFromFirestore(currentScript.firestoreId);
     scripts = scripts.filter(s => s.firestoreId !== currentScript.firestoreId);
     showToast("🗑️ تم الحذف");
     currentScript = null;
     showView("list");
-  };
+  }
+
 </script>
 </body>
 </html>
