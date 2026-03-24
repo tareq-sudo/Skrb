@@ -548,21 +548,21 @@
   let editingId = null;
   let currentUser = null;
 
-  onAuthStateChanged(auth, (user) => {
-    document.getElementById("loadingScreen").classList.add("hidden");
+  // ✅ التعديل الرئيسي: انتظر loadScripts قبل renderList
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user;
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
-document.getElementById("appScreen").classList.remove("hidden");
-
+      document.getElementById("appScreen").classList.remove("hidden");
+      await loadScripts();
       renderList();
-      loadScripts().then(() => renderList()).catch(() => renderList());
+      document.getElementById("loadingScreen").classList.add("hidden");
     } else {
       currentUser = null;
       scripts = [];
-document.getElementById("appScreen").classList.add("hidden");
-
+      document.getElementById("loadingScreen").classList.add("hidden");
+      document.getElementById("appScreen").classList.add("hidden");
       document.getElementById("authScreen").classList.remove("hidden");
     }
   });
@@ -575,7 +575,7 @@ document.getElementById("appScreen").classList.add("hidden");
     document.getElementById("authError").style.display = "none";
   };
 
-  // ===== DEBUG: يظهر الخطأ الحقيقي على الشاشة =====
+  // ✅ doLogin نظيف بدون debug
   window.doLogin = async () => {
     const email = document.getElementById("loginEmail").value.trim();
     const pass = document.getElementById("loginPass").value;
@@ -584,10 +584,17 @@ document.getElementById("appScreen").classList.add("hidden");
     btn.disabled = true;
     btn.textContent = "جاري الدخول...";
     try {
-      const result = await signInWithEmailAndPassword(auth, email, pass);
-      showAuthError("✅ نجح! uid: " + result.user.uid);
+      await signInWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged يتولى الباقي تلقائياً
     } catch (e) {
-      showAuthError("❌ " + e.code + " | " + e.message);
+      const msgs = {
+        "auth/user-not-found": "الإيميل غير مسجل",
+        "auth/wrong-password": "كلمة المرور غلط",
+        "auth/invalid-email": "إيميل غير صحيح",
+        "auth/invalid-credential": "الإيميل أو كلمة المرور غلط",
+        "auth/too-many-requests": "حاولت كثير، انتظر شوي",
+      };
+      showAuthError(msgs[e.code] || "خطأ: " + e.message);
       btn.disabled = false;
       btn.textContent = "دخول";
     }
@@ -603,8 +610,14 @@ document.getElementById("appScreen").classList.add("hidden");
     btn.textContent = "جاري الإنشاء...";
     try {
       await createUserWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged يتولى الباقي تلقائياً
     } catch (e) {
-      showAuthError("❌ " + e.code + " | " + e.message);
+      const msgs = {
+        "auth/email-already-in-use": "الإيميل مسجل مسبقاً",
+        "auth/invalid-email": "إيميل غير صحيح",
+        "auth/weak-password": "كلمة المرور ضعيفة",
+      };
+      showAuthError(msgs[e.code] || "خطأ: " + e.message);
       btn.disabled = false;
       btn.textContent = "إنشاء حساب";
     }
