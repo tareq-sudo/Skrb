@@ -554,14 +554,14 @@
       currentUser = user;
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
-document.getElementById("appScreen").style.display = "block";
+document.getElementById("appScreen").classList.remove("hidden");
 
       renderList();
       loadScripts().then(() => renderList()).catch(() => renderList());
     } else {
       currentUser = null;
       scripts = [];
-document.getElementById("appScreen").style.display = "none";
+document.getElementById("appScreen").classList.add("hidden");
 
       document.getElementById("authScreen").classList.remove("hidden");
     }
