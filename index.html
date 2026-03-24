@@ -193,7 +193,6 @@
       box-shadow: 0 4px 20px #a855f740;
       transition: all .2s;
     }
-    .new-btn:hover { transform: translateY(-1px); }
 
     .logout-btn {
       background: transparent;
@@ -217,7 +216,6 @@
       font-family: inherit;
       font-size: 14px;
       cursor: pointer;
-      transition: all .2s;
     }
 
     .container { max-width: 700px; margin: 0 auto; padding: 20px 16px; }
@@ -264,9 +262,7 @@
       background: var(--surface);
       color: var(--text);
       outline: none;
-      transition: border-color .2s;
     }
-    .search-input:focus { border-color: var(--accent); }
     .search-input::placeholder { color: var(--text3); }
 
     .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -525,9 +521,7 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .hidden { display: none; }
-
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -653,7 +647,9 @@
     getAuth, onAuthStateChanged,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    signOut
+    signOut,
+    browserSessionPersistence,
+    setPersistence
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
     getFirestore, collection, doc,
@@ -674,6 +670,9 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // إصلاح Safari iOS
+  setPersistence(auth, browserSessionPersistence).catch(console.error);
+
   const PLATFORM_COLORS = {
     "شورتس": "#f43f5e", "ريلز": "#e879f9",
     "تيك توك": "#94a3b8", "يوتيوب": "#f43f5e",
@@ -685,7 +684,6 @@
   let editingId = null;
   let currentUser = null;
 
-  // ===== AUTH STATE — التعديل هنا =====
   onAuthStateChanged(auth, (user) => {
     document.getElementById("loadingScreen").classList.add("hidden");
     if (user) {
@@ -693,7 +691,6 @@
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("appScreen").classList.remove("hidden");
-      // يفتح التطبيق فوراً بعدين يحمل السكربتات بالخلفية
       renderList();
       loadScripts().then(() => renderList()).catch(() => renderList());
     } else {
@@ -704,7 +701,6 @@
     }
   });
 
-  // ===== AUTH =====
   window.switchTab = (tab) => {
     document.getElementById("loginForm").classList.toggle("hidden", tab !== "login");
     document.getElementById("registerForm").classList.toggle("hidden", tab !== "register");
@@ -721,6 +717,7 @@
     btn.disabled = true;
     btn.textContent = "جاري الدخول...";
     try {
+      await setPersistence(auth, browserSessionPersistence);
       await signInWithEmailAndPassword(auth, email, pass);
     } catch (e) {
       showAuthError(getAuthError(e.code));
@@ -738,6 +735,7 @@
     btn.disabled = true;
     btn.textContent = "جاري الإنشاء...";
     try {
+      await setPersistence(auth, browserSessionPersistence);
       await createUserWithEmailAndPassword(auth, email, pass);
     } catch (e) {
       showAuthError(getAuthError(e.code));
@@ -769,7 +767,6 @@
     return errors[code] || "صار خطأ، حاول مرة ثانية";
   }
 
-  // ===== FIRESTORE =====
   async function loadScripts() {
     if (!currentUser) return;
     try {
@@ -778,7 +775,7 @@
       scripts = snap.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
       scripts.sort((a, b) => b.id - a.id);
     } catch (e) {
-      console.error("Firestore Error:", e);
+      console.error("Firestore:", e);
       scripts = [];
     }
   }
@@ -793,15 +790,14 @@
         const ref = await addDoc(collection(db, "scripts"), script);
         return ref.id;
       }
-    } catch (e) { console.error("Save Error:", e); }
+    } catch (e) { console.error("Save:", e); }
   }
 
   async function deleteFromFirestore(firestoreId) {
     try { await deleteDoc(doc(db, "scripts", firestoreId)); }
-    catch (e) { console.error("Delete Error:", e); }
+    catch (e) { console.error("Delete:", e); }
   }
 
-  // ===== APP =====
   window.showToast = (msg) => {
     const t = document.getElementById("toast");
     t.textContent = msg;
