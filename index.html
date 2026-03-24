@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>مكتبة سكربتات</title>
+  <title>مكتبة سكربتاتي</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -501,10 +501,8 @@
         </div>
         <div class="detail-title" id="dTitle"></div>
         <div id="dSections"></div>
-        <div class="form-actions">
-          <button class="delete-btn" onclick="deleteScript()">🗑️ حذف</button>
-          <button class="edit-btn" onclick="openForm(currentScript)">✏️ تعديل</button>
-        </div>
+        <!-- ✅ التعديل: أزرار التفاصيل تُبنى ديناميكياً في openDetail -->
+        <div class="form-actions" id="detailActions"></div>
       </div>
     </div>
   </div>
@@ -553,19 +551,15 @@
     if (user) {
       currentUser = user;
       document.getElementById("userEmail").textContent = user.email;
-document.getElementById("authScreen").style.display = "none";
-
-document.getElementById("appScreen").style.display = "block";
-
+      document.getElementById("authScreen").style.display = "none";
+      document.getElementById("appScreen").style.display = "block";
       renderList();
       loadScripts().then(() => renderList()).catch(() => renderList());
     } else {
       currentUser = null;
       scripts = [];
-document.getElementById("appScreen").style.display = "none";
-
-document.getElementById("authScreen").style.display = "flex";
-
+      document.getElementById("appScreen").style.display = "none";
+      document.getElementById("authScreen").style.display = "flex";
     }
   });
 
@@ -577,7 +571,6 @@ document.getElementById("authScreen").style.display = "flex";
     document.getElementById("authError").style.display = "none";
   };
 
-  // ===== DEBUG: يظهر الخطأ الحقيقي على الشاشة =====
   window.doLogin = async () => {
     const email = document.getElementById("loginEmail").value.trim();
     const pass = document.getElementById("loginPass").value;
@@ -586,8 +579,7 @@ document.getElementById("authScreen").style.display = "flex";
     btn.disabled = true;
     btn.textContent = "جاري الدخول...";
     try {
-      const result = await signInWithEmailAndPassword(auth, email, pass);
-      showAuthError("✅ نجح! uid: " + result.user.uid);
+      await signInWithEmailAndPassword(auth, email, pass);
     } catch (e) {
       showAuthError("❌ " + e.code + " | " + e.message);
       btn.disabled = false;
@@ -798,15 +790,19 @@ document.getElementById("authScreen").style.display = "flex";
     btn.textContent = "💾 حفظ السكربت";
   };
 
+  // ✅ التعديل الرئيسي: بناء الأزرار ديناميكياً مع تمرير firestoreId مباشرة
   window.openDetail = (firestoreId) => {
-    currentScript = scripts.find(s => s.firestoreId === firestoreId);
-    if (!currentScript) return;
-    const color = PLATFORM_COLORS[currentScript.platform] || "#a855f7";
+    const script = scripts.find(s => s.firestoreId === firestoreId);
+    if (!script) return;
+    currentScript = script;
+
+    const color = PLATFORM_COLORS[script.platform] || "#a855f7";
     document.getElementById("dBadges").innerHTML = `
-      <span class="platform-badge" style="background:${color}20;color:${color};border:1px solid ${color}40">${currentScript.platform}</span>
-      <span class="cat-badge" style="margin-right:8px">${currentScript.category}</span>`;
-    document.getElementById("dDate").textContent = currentScript.date;
-    document.getElementById("dTitle").textContent = currentScript.title;
+      <span class="platform-badge" style="background:${color}20;color:${color};border:1px solid ${color}40">${script.platform}</span>
+      <span class="cat-badge" style="margin-right:8px">${script.category}</span>`;
+    document.getElementById("dDate").textContent = script.date;
+    document.getElementById("dTitle").textContent = script.title;
+
     const sections = [
       { key:"hook", label:"🔴 Hook", color:"#f43f5e" },
       { key:"value", label:"📦 Value", color:"#3b82f6" },
@@ -814,23 +810,34 @@ document.getElementById("authScreen").style.display = "flex";
       { key:"cta", label:"📢 CTA", color:"#a855f7" },
     ];
     document.getElementById("dSections").innerHTML = sections
-      .filter(s => currentScript[s.key])
+      .filter(s => script[s.key])
       .map(s => `
         <div class="section" style="border-color:${s.color}40">
           <div class="section-label" style="color:${s.color}">${s.label}</div>
-          <div class="section-text">${currentScript[s.key]}</div>
+          <div class="section-text">${script[s.key]}</div>
         </div>`).join("");
+
+    // ✅ الأزرار تأخذ السكربت مباشرة من المصفوفة بدل الاعتماد على currentScript
+    document.getElementById("detailActions").innerHTML = `
+      <button class="delete-btn" onclick="deleteScript('${firestoreId}')">🗑️ حذف</button>
+      <button class="edit-btn" onclick="openForm(scripts.find(s => s.firestoreId === '${firestoreId}'))">✏️ تعديل</button>
+    `;
+
     showView("detail");
   };
 
-  window.deleteScript = async () => {
-    if (!currentScript || !confirm("متأكد تبي تحذف السكربت؟")) return;
-    await deleteFromFirestore(currentScript.firestoreId);
-    scripts = scripts.filter(s => s.firestoreId !== currentScript.firestoreId);
+  // ✅ تعديل deleteScript ليأخذ firestoreId كمعامل
+  window.deleteScript = async (firestoreId) => {
+    if (!confirm("متأكد تبي تحذف السكربت؟")) return;
+    await deleteFromFirestore(firestoreId);
+    scripts = scripts.filter(s => s.firestoreId !== firestoreId);
     showToast("🗑️ تم الحذف");
     currentScript = null;
     showView("list");
   };
+
+  // ✅ تعليمة لاستخدامها في الـ HTML المضمّن
+  window.scripts = scripts;
 </script>
 </body>
 </html>
