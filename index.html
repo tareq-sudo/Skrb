@@ -548,7 +548,6 @@
   let editingId = null;
   let currentUser = null;
 
-  // ✅ onAuthStateChanged فقط للتحقق عند تحميل الصفحة
   onAuthStateChanged(auth, async (user) => {
     if (user && !currentUser) {
       currentUser = user;
@@ -574,7 +573,6 @@
     document.getElementById("authError").style.display = "none";
   };
 
-  // ✅ doLogin يتحكم بالانتقال يدوياً بدون انتظار onAuthStateChanged
   window.doLogin = async () => {
     const email = document.getElementById("loginEmail").value.trim();
     const pass = document.getElementById("loginPass").value;
@@ -582,8 +580,11 @@
     if (!email || !pass) return showAuthError("حط الإيميل وكلمة المرور");
     btn.disabled = true;
     btn.textContent = "جاري الدخول...";
+    document.getElementById("authError").style.display = "none";
     try {
       const result = await signInWithEmailAndPassword(auth, email, pass);
+      // ✅ رسالة debug — إذا ظهرت يعني Firebase شغال
+      showAuthError("✅ دخل! الحين يحمل...");
       currentUser = result.user;
       document.getElementById("userEmail").textContent = result.user.email;
       document.getElementById("authScreen").classList.add("hidden");
@@ -591,20 +592,13 @@
       await loadScripts();
       renderList();
     } catch (e) {
-      const msgs = {
-        "auth/user-not-found": "الإيميل غير مسجل",
-        "auth/wrong-password": "كلمة المرور غلط",
-        "auth/invalid-email": "إيميل غير صحيح",
-        "auth/invalid-credential": "الإيميل أو كلمة المرور غلط",
-        "auth/too-many-requests": "حاولت كثير، انتظر شوي",
-      };
-      showAuthError(msgs[e.code] || "خطأ: " + e.message);
+      // ✅ يظهر الكود الحقيقي للخطأ
+      showAuthError("كود: " + e.code + " | " + e.message);
       btn.disabled = false;
       btn.textContent = "دخول";
     }
   };
 
-  // ✅ doRegister نفس الطريقة
   window.doRegister = async () => {
     const email = document.getElementById("regEmail").value.trim();
     const pass = document.getElementById("regPass").value;
@@ -627,7 +621,7 @@
         "auth/invalid-email": "إيميل غير صحيح",
         "auth/weak-password": "كلمة المرور ضعيفة",
       };
-      showAuthError(msgs[e.code] || "خطأ: " + e.message);
+      showAuthError(msgs[e.code] || "كود: " + e.code + " | " + e.message);
       btn.disabled = false;
       btn.textContent = "إنشاء حساب";
     }
