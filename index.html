@@ -548,23 +548,22 @@
   let editingId = null;
   let currentUser = null;
 
-  // ✅ التعديل الرئيسي: انتظر loadScripts قبل renderList
+  // ✅ onAuthStateChanged فقط للتحقق عند تحميل الصفحة
   onAuthStateChanged(auth, async (user) => {
-    if (user) {
+    if (user && !currentUser) {
       currentUser = user;
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("appScreen").classList.remove("hidden");
       await loadScripts();
       renderList();
-      document.getElementById("loadingScreen").classList.add("hidden");
-    } else {
+    } else if (!user) {
       currentUser = null;
       scripts = [];
-      document.getElementById("loadingScreen").classList.add("hidden");
       document.getElementById("appScreen").classList.add("hidden");
       document.getElementById("authScreen").classList.remove("hidden");
     }
+    document.getElementById("loadingScreen").classList.add("hidden");
   });
 
   window.switchTab = (tab) => {
@@ -575,7 +574,7 @@
     document.getElementById("authError").style.display = "none";
   };
 
-  // ✅ doLogin نظيف بدون debug
+  // ✅ doLogin يتحكم بالانتقال يدوياً بدون انتظار onAuthStateChanged
   window.doLogin = async () => {
     const email = document.getElementById("loginEmail").value.trim();
     const pass = document.getElementById("loginPass").value;
@@ -584,8 +583,13 @@
     btn.disabled = true;
     btn.textContent = "جاري الدخول...";
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
-      // onAuthStateChanged يتولى الباقي تلقائياً
+      const result = await signInWithEmailAndPassword(auth, email, pass);
+      currentUser = result.user;
+      document.getElementById("userEmail").textContent = result.user.email;
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("appScreen").classList.remove("hidden");
+      await loadScripts();
+      renderList();
     } catch (e) {
       const msgs = {
         "auth/user-not-found": "الإيميل غير مسجل",
@@ -600,6 +604,7 @@
     }
   };
 
+  // ✅ doRegister نفس الطريقة
   window.doRegister = async () => {
     const email = document.getElementById("regEmail").value.trim();
     const pass = document.getElementById("regPass").value;
@@ -609,8 +614,13 @@
     btn.disabled = true;
     btn.textContent = "جاري الإنشاء...";
     try {
-      await createUserWithEmailAndPassword(auth, email, pass);
-      // onAuthStateChanged يتولى الباقي تلقائياً
+      const result = await createUserWithEmailAndPassword(auth, email, pass);
+      currentUser = result.user;
+      document.getElementById("userEmail").textContent = result.user.email;
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("appScreen").classList.remove("hidden");
+      scripts = [];
+      renderList();
     } catch (e) {
       const msgs = {
         "auth/email-already-in-use": "الإيميل مسجل مسبقاً",
@@ -625,6 +635,7 @@
 
   window.doLogout = async () => {
     await signOut(auth);
+    currentUser = null;
     scripts = [];
   };
 
