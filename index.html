@@ -3,595 +3,160 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' https://www.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com https://*.firebaseio.com https://*.googleapis.com;
+             script-src 'self' https://www.gstatic.com 'unsafe-inline';
+             style-src 'self' https://fonts.googleapis.com 'unsafe-inline';
+             font-src https://fonts.gstatic.com;
+             connect-src https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com;
+             img-src 'self' data:;
+             object-src 'none';
+             base-uri 'self';">
   <title>سكربتاتي</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #080b12;
-      --bg2: #0d1120;
-      --surface: #111827;
-      --surface2: #1a2235;
-      --surface3: #1f2a40;
-      --border: #1e2d45;
-      --border2: #253350;
-      --accent: #38bdf8;
-      --accent2: #0ea5e9;
-      --accent3: #7dd3fc;
-      --glow: #38bdf820;
-      --text: #f0f6ff;
-      --text2: #94aec8;
-      --text3: #4a637e;
-      --red: #fb7185;
-      --green: #34d399;
-      --yellow: #fbbf24;
-      --purple: #a78bfa;
-      --pink: #f472b6;
+      --bg: #080b12; --bg2: #0d1120; --surface: #111827; --surface2: #1a2235;
+      --surface3: #1f2a40; --border: #1e2d45; --border2: #253350;
+      --accent: #38bdf8; --accent2: #0ea5e9; --accent3: #7dd3fc; --glow: #38bdf820;
+      --text: #f0f6ff; --text2: #94aec8; --text3: #4a637e;
+      --red: #fb7185; --green: #34d399; --yellow: #fbbf24; --purple: #a78bfa; --pink: #f472b6;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .blob {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      pointer-events: none;
-      z-index: 0;
-    }
+    body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; }
+    .blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
     .blob-1 { width: 500px; height: 500px; background: #0ea5e915; top: -150px; right: -100px; }
     .blob-2 { width: 400px; height: 400px; background: #a78bfa08; bottom: -100px; left: -100px; }
     .blob-3 { width: 300px; height: 300px; background: #38bdf810; top: 40%; left: 30%; }
-
-    .loading-screen {
-      position: fixed; inset: 0;
-      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;
-      background: var(--bg);
-      z-index: 1000;
-    }
-    .loading-logo {
-      font-size: 28px; font-weight: 900; letter-spacing: -1px;
-      background: linear-gradient(135deg, var(--accent), var(--purple));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .loading-bar {
-      width: 180px; height: 2px;
-      background: var(--border2);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .loading-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--purple));
-      border-radius: 2px;
-      animation: loadbar 1.2s ease-in-out infinite;
-    }
-    @keyframes loadbar {
-      0% { width: 0%; margin-right: 100%; }
-      50% { width: 60%; margin-right: 0%; }
-      100% { width: 0%; margin-right: 0%; }
-    }
-
-    #authScreen {
-      position: relative; z-index: 1;
-      min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-    }
-
-    .auth-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 28px;
-      padding: 36px 32px;
-      width: 100%; max-width: 400px;
-      box-shadow: 0 32px 80px #00000060, 0 0 0 1px #38bdf808 inset;
-      position: relative;
-      overflow: hidden;
-    }
-    .auth-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0.5;
-    }
-
-    .auth-brand {
-      display: flex; align-items: center; gap: 12px;
-      margin-bottom: 32px;
-    }
-    .auth-brand-icon {
-      width: 44px; height: 44px;
-      background: linear-gradient(135deg, var(--accent2), var(--purple));
-      border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 8px 24px #0ea5e930;
-    }
+    .loading-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; background: var(--bg); z-index: 1000; }
+    .loading-logo { font-size: 28px; font-weight: 900; letter-spacing: -1px; background: linear-gradient(135deg, var(--accent), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .loading-bar { width: 180px; height: 2px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+    .loading-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); border-radius: 2px; animation: loadbar 1.2s ease-in-out infinite; }
+    @keyframes loadbar { 0% { width: 0%; margin-right: 100%; } 50% { width: 60%; margin-right: 0%; } 100% { width: 0%; margin-right: 0%; } }
+    #authScreen { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .auth-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 28px; padding: 36px 32px; width: 100%; max-width: 400px; box-shadow: 0 32px 80px #00000060, 0 0 0 1px #38bdf808 inset; position: relative; overflow: hidden; }
+    .auth-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.5; }
+    .auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .auth-brand-icon { width: 44px; height: 44px; background: linear-gradient(135deg, var(--accent2), var(--purple)); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 8px 24px #0ea5e930; }
     .auth-brand-text { font-size: 20px; font-weight: 800; color: var(--text); }
     .auth-brand-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
-
-    .auth-tabs {
-      display: flex;
-      background: var(--bg2);
-      border-radius: 14px;
-      padding: 4px;
-      margin-bottom: 28px;
-      border: 1px solid var(--border);
-    }
-    .auth-tab {
-      flex: 1; padding: 10px 8px;
-      border: none; background: transparent;
-      color: var(--text3);
-      font-family: inherit; font-size: 14px; font-weight: 700;
-      cursor: pointer; border-radius: 10px;
-      transition: all .25s;
-    }
-    .auth-tab.active {
-      background: var(--surface3);
-      color: var(--text);
-      box-shadow: 0 2px 8px #00000040;
-    }
-
+    .auth-tabs { display: flex; background: var(--bg2); border-radius: 14px; padding: 4px; margin-bottom: 28px; border: 1px solid var(--border); }
+    .auth-tab { flex: 1; padding: 10px 8px; border: none; background: transparent; color: var(--text3); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border-radius: 10px; transition: all .25s; }
+    .auth-tab.active { background: var(--surface3); color: var(--text); box-shadow: 0 2px 8px #00000040; }
     .field-group { margin-bottom: 18px; }
-    .field-label {
-      display: block; font-size: 12px; font-weight: 700;
-      color: var(--text3); margin-bottom: 8px;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .field-input {
-      width: 100%; padding: 13px 16px;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 13px;
-      font-family: inherit; font-size: 15px;
-      color: var(--text);
-      outline: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .field-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--glow);
-    }
+    .field-label { display: block; font-size: 12px; font-weight: 700; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .field-input { width: 100%; padding: 13px 16px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 13px; font-family: inherit; font-size: 15px; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
+    .field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
     .field-input::placeholder { color: var(--text3); }
-
-    .auth-btn {
-      width: 100%; margin-top: 8px;
-      padding: 14px;
-      background: linear-gradient(135deg, var(--accent2), #0284c7);
-      border: none; border-radius: 13px;
-      color: #fff; font-family: inherit;
-      font-size: 15px; font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 24px #0ea5e930;
-      transition: all .2s;
-      position: relative; overflow: hidden;
-    }
-    .auth-btn::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(180deg, #ffffff15 0%, transparent 100%);
-    }
+    .auth-btn { width: 100%; margin-top: 8px; padding: 14px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 13px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 24px #0ea5e930; transition: all .2s; position: relative; overflow: hidden; }
+    .auth-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #ffffff15 0%, transparent 100%); }
     .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 32px #0ea5e940; }
     .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .auth-error {
-      margin-top: 14px; padding: 12px 16px;
-      border-radius: 12px;
-      background: #fb718512; border: 1px solid #fb718530;
-      color: var(--red); font-size: 13px;
-      display: none;
-    }
-
+    .auth-error { margin-top: 14px; padding: 12px 16px; border-radius: 12px; background: #fb718512; border: 1px solid #fb718530; color: var(--red); font-size: 13px; display: none; }
     #appScreen { position: relative; z-index: 1; }
-
-    header {
-      background: rgba(8, 11, 18, 0.8);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 100;
-    }
-    .header-inner {
-      max-width: 740px; margin: 0 auto;
-      padding: 0 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 60px;
-    }
-
+    header { background: rgba(8,11,18,0.8); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 740px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
     .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-icon {
-      width: 34px; height: 34px;
-      background: linear-gradient(135deg, var(--accent2), var(--purple));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 17px;
-    }
+    .logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent2), var(--purple)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
     .logo-text { font-size: 17px; font-weight: 800; color: var(--text); }
-
     .header-right { display: flex; align-items: center; gap: 8px; }
-
-    .user-chip {
-      font-size: 11px; color: var(--text3);
-      padding: 5px 12px;
-      background: var(--surface2);
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      max-width: 120px;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent2), #0284c7);
-      color: #fff; border: none;
-      border-radius: 11px;
-      padding: 9px 18px;
-      font-family: inherit; font-size: 13px; font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 16px #0ea5e930;
-      transition: all .2s;
-      white-space: nowrap;
-    }
+    .user-chip { font-size: 11px; color: var(--text3); padding: 5px 12px; background: var(--surface2); border-radius: 20px; border: 1px solid var(--border); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent2), #0284c7); color: #fff; border: none; border-radius: 11px; padding: 9px 18px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px #0ea5e930; transition: all .2s; white-space: nowrap; }
     .btn-primary:hover { transform: translateY(-1px); }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--text3);
-      border: 1px solid var(--border2);
-      border-radius: 11px;
-      padding: 8px 14px;
-      font-family: inherit; font-size: 13px;
-      cursor: pointer;
-      transition: all .2s;
-      white-space: nowrap;
-    }
+    .btn-ghost { background: transparent; color: var(--text3); border: 1px solid var(--border2); border-radius: 11px; padding: 8px 14px; font-family: inherit; font-size: 13px; cursor: pointer; transition: all .2s; white-space: nowrap; }
     .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-
-    .btn-danger-ghost {
-      background: transparent;
-      color: var(--text3);
-      border: 1px solid var(--border2);
-      border-radius: 11px;
-      padding: 8px 14px;
-      font-family: inherit; font-size: 13px;
-      cursor: pointer;
-      transition: all .2s;
-    }
+    .btn-danger-ghost { background: transparent; color: var(--text3); border: 1px solid var(--border2); border-radius: 11px; padding: 8px 14px; font-family: inherit; font-size: 13px; cursor: pointer; transition: all .2s; }
     .btn-danger-ghost:hover { border-color: var(--red); color: var(--red); }
-
     .container { max-width: 740px; margin: 0 auto; padding: 24px 16px; }
-
     .search-wrap { position: relative; margin-bottom: 16px; }
-    .search-icon {
-      position: absolute; top: 50%; right: 16px;
-      transform: translateY(-50%);
-      color: var(--text3); font-size: 16px;
-      pointer-events: none;
-    }
-    .search-input {
-      width: 100%; padding: 13px 44px 13px 18px;
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 15px;
-      font-family: inherit; font-size: 15px;
-      color: var(--text);
-      outline: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
+    .search-icon { position: absolute; top: 50%; right: 16px; transform: translateY(-50%); color: var(--text3); font-size: 16px; pointer-events: none; }
+    .search-input { width: 100%; padding: 13px 44px 13px 18px; background: var(--surface); border: 1px solid var(--border2); border-radius: 15px; font-family: inherit; font-size: 15px; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
     .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
     .search-input::placeholder { color: var(--text3); }
-
     .pills { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
-    .pill {
-      padding: 6px 16px;
-      border-radius: 20px;
-      border: 1px solid var(--border2);
-      background: transparent;
-      color: var(--text3);
-      font-family: inherit; font-size: 13px; font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
-    }
+    .pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text3); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
     .pill:hover { border-color: var(--accent); color: var(--accent); }
-    .pill.active {
-      background: var(--glow);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
+    .pill.active { background: var(--glow); border-color: var(--accent); color: var(--accent); }
     .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px; }
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px 10px;
-      text-align: center;
-      transition: border-color .2s;
-    }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 10px; text-align: center; transition: border-color .2s; }
     .stat-card:hover { border-color: var(--border2); }
-    .stat-num {
-      display: block;
-      font-size: 26px; font-weight: 900;
-      color: var(--accent);
-      line-height: 1;
-      margin-bottom: 5px;
-    }
+    .stat-num { display: block; font-size: 26px; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 5px; }
     .stat-label { font-size: 11px; color: var(--text3); }
-
     .grid { display: flex; flex-direction: column; gap: 10px; }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
-      cursor: pointer;
-      transition: all .25s;
-      position: relative; overflow: hidden;
-    }
-    .card-accent-line {
-      position: absolute; top: 0; right: 0;
-      width: 3px; height: 100%;
-      border-radius: 0 20px 20px 0;
-    }
-    .card:hover {
-      border-color: var(--border2);
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px #00000040;
-    }
-
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; cursor: pointer; transition: all .25s; position: relative; overflow: hidden; }
+    .card-accent-line { position: absolute; top: 0; right: 0; width: 3px; height: 100%; border-radius: 0 20px 20px 0; }
+    .card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 12px 40px #00000040; }
     .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
     .date-text { font-size: 11px; color: var(--text3); margin-right: auto; }
     .card-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 8px; line-height: 1.4; }
     .card-hook { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 12px; }
-    .card-footer {
-      display: flex; align-items: center; justify-content: space-between;
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
-    }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 10px; }
     .word-count { font-size: 11px; color: var(--text3); }
     .card-arrow { color: var(--text3); font-size: 14px; }
-
     .empty { text-align: center; padding: 80px 20px; }
-    .empty-icon {
-      width: 70px; height: 70px;
-      background: var(--surface2);
-      border-radius: 22px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 32px;
-      margin: 0 auto 20px;
-    }
+    .empty-icon { width: 70px; height: 70px; background: var(--surface2); border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
     .empty-title { font-size: 18px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
     .empty-sub { font-size: 14px; color: var(--text3); margin-bottom: 24px; }
-
-    .form-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 24px;
-      padding: 28px;
-      box-shadow: 0 8px 48px #00000050;
-      position: relative; overflow: hidden;
-    }
-    .form-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0.3;
-    }
-
+    .form-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 24px; padding: 28px; box-shadow: 0 8px 48px #00000050; position: relative; overflow: hidden; }
+    .form-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.3; }
     .form-header { margin-bottom: 24px; }
     .form-title { font-size: 22px; font-weight: 900; color: var(--text); }
     .form-subtitle { font-size: 13px; color: var(--text3); margin-top: 4px; }
-
     .form-field { margin-bottom: 18px; }
-    .form-label {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; font-weight: 700; color: var(--text3);
-      text-transform: uppercase; letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
+    .form-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
     .form-label-dot { width: 7px; height: 7px; border-radius: 50%; }
-
-    .form-input, .form-select, .form-textarea {
-      width: 100%; padding: 12px 16px;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 13px;
-      font-family: inherit; font-size: 15px;
-      color: var(--text);
-      outline: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .form-input:focus, .form-select:focus, .form-textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--glow);
-    }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 13px; font-family: inherit; font-size: 15px; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
     .form-input::placeholder, .form-textarea::placeholder { color: var(--text3); }
     .form-select option { background: var(--surface2); }
     .form-textarea { resize: none; line-height: 1.8; min-height: 85px; overflow: hidden; }
-
     .row2 { display: flex; gap: 12px; }
     .row2 > div { flex: 1; }
-
-    .script-section {
-      border-radius: 16px;
-      border: 1px solid var(--border2);
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    .section-header {
-      display: flex; align-items: center; gap: 10px;
-      padding: 11px 16px;
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-    }
+    .script-section { border-radius: 16px; border: 1px solid var(--border2); overflow: hidden; margin-bottom: 12px; }
+    .section-header { display: flex; align-items: center; gap: 10px; padding: 11px 16px; background: var(--surface2); border-bottom: 1px solid var(--border); }
     .section-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .section-header-label { font-size: 12px; font-weight: 800; flex: 1; }
     .section-header-tag { font-size: 10px; color: var(--text3); background: var(--bg2); padding: 2px 9px; border-radius: 10px; }
-    .section-textarea {
-      width: 100%; padding: 14px 16px;
-      background: var(--bg2);
-      border: none;
-      font-family: inherit; font-size: 14px;
-      color: var(--text2);
-      outline: none;
-      resize: none; line-height: 1.8;
-      min-height: 75px; overflow: hidden;
-    }
+    .section-textarea { width: 100%; padding: 14px 16px; background: var(--bg2); border: none; font-family: inherit; font-size: 14px; color: var(--text2); outline: none; resize: none; line-height: 1.8; min-height: 75px; overflow: hidden; }
     .section-textarea::placeholder { color: var(--text3); }
-
-    .form-actions {
-      display: flex; gap: 10px; margin-top: 24px;
-      justify-content: flex-end; flex-wrap: wrap;
-    }
-    .btn-cancel {
-      padding: 12px 22px;
-      background: transparent;
-      border: 1px solid var(--border2);
-      border-radius: 12px;
-      color: var(--text2);
-      font-family: inherit; font-size: 14px;
-      cursor: pointer;
-      transition: all .2s;
-    }
+    .form-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; flex-wrap: wrap; }
+    .btn-cancel { padding: 12px 22px; background: transparent; border: 1px solid var(--border2); border-radius: 12px; color: var(--text2); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
     .btn-cancel:hover { border-color: var(--text3); }
-    .btn-save {
-      padding: 12px 28px;
-      background: linear-gradient(135deg, var(--accent2), #0284c7);
-      border: none; border-radius: 12px;
-      color: #fff;
-      font-family: inherit; font-size: 15px; font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 20px #0ea5e930;
-      transition: all .2s;
-    }
+    .btn-save { padding: 12px 28px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 12px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px #0ea5e930; transition: all .2s; }
     .btn-save:hover { transform: translateY(-1px); }
     .btn-save:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .detail-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 8px 48px #00000050;
-    }
-    .detail-hero {
-      padding: 28px;
-      border-bottom: 1px solid var(--border);
-      position: relative;
-    }
-    .detail-hero-bg {
-      position: absolute; inset: 0;
-      opacity: 0.04;
-      background: radial-gradient(ellipse at top right, var(--accent), transparent 60%);
-    }
+    .detail-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 24px; overflow: hidden; box-shadow: 0 8px 48px #00000050; }
+    .detail-hero { padding: 28px; border-bottom: 1px solid var(--border); position: relative; }
+    .detail-hero-bg { position: absolute; inset: 0; opacity: 0.04; background: radial-gradient(ellipse at top right, var(--accent), transparent 60%); }
     .detail-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .detail-date { font-size: 12px; color: var(--text3); margin-right: auto; }
     .detail-title { font-size: 24px; font-weight: 900; color: var(--text); line-height: 1.4; position: relative; }
-
     .detail-body { padding: 24px; }
-
     .detail-section { margin-bottom: 14px; }
-    .detail-section-head {
-      display: flex; align-items: center; gap: 9px;
-      margin-bottom: 10px;
-    }
+    .detail-section-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
     .detail-section-dot { width: 8px; height: 8px; border-radius: 50%; }
     .detail-section-label { font-size: 12px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
-    .detail-section-body {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px 18px;
-      font-size: 15px; line-height: 1.9;
-      color: var(--text2);
-      white-space: pre-wrap;
-    }
-
-    .detail-actions {
-      display: flex; gap: 10px;
-      padding: 20px 24px;
-      border-top: 1px solid var(--border);
-      background: var(--bg2);
-    }
-    .btn-delete {
-      padding: 12px 20px;
-      background: transparent;
-      border: 1px solid #fb718530;
-      border-radius: 12px;
-      color: var(--red);
-      font-family: inherit; font-size: 14px;
-      cursor: pointer;
-      transition: all .2s;
-    }
+    .detail-section-body { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; font-size: 15px; line-height: 1.9; color: var(--text2); white-space: pre-wrap; }
+    .detail-actions { display: flex; gap: 10px; padding: 20px 24px; border-top: 1px solid var(--border); background: var(--bg2); }
+    .btn-delete { padding: 12px 20px; background: transparent; border: 1px solid #fb718530; border-radius: 12px; color: var(--red); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
     .btn-delete:hover { background: #fb718512; }
-    .btn-edit {
-      flex: 1;
-      padding: 12px 26px;
-      background: linear-gradient(135deg, var(--accent2), #0284c7);
-      border: none; border-radius: 12px;
-      color: #fff;
-      font-family: inherit; font-size: 15px; font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 20px #0ea5e930;
-      transition: all .2s;
-    }
+    .btn-edit { flex: 1; padding: 12px 26px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 12px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px #0ea5e930; transition: all .2s; }
     .btn-edit:hover { transform: translateY(-1px); }
-
-    .toast {
-      position: fixed;
-      bottom: 32px; left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--surface3);
-      border: 1px solid var(--border2);
-      border-radius: 16px;
-      padding: 13px 28px;
-      font-size: 14px; font-weight: 600;
-      color: var(--text);
-      z-index: 999;
-      box-shadow: 0 12px 40px #00000060;
-      opacity: 0; pointer-events: none;
-      transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
-      white-space: nowrap;
-    }
-    .toast.show {
-      opacity: 1; pointer-events: auto;
-      transform: translateX(-50%) translateY(0);
-    }
-
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface3); border: 1px solid var(--border2); border-radius: 16px; padding: 13px 28px; font-size: 14px; font-weight: 600; color: var(--text); z-index: 999; box-shadow: 0 12px 40px #00000060; opacity: 0; pointer-events: none; transition: all .3s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; }
+    .toast.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
     .hidden { display: none !important; }
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-    @media (max-width: 480px) {
-      .stats-grid { grid-template-columns: repeat(3, 1fr); }
-      .detail-title { font-size: 20px; }
-    }
+    @media (max-width: 480px) { .stats-grid { grid-template-columns: repeat(3,1fr); } .detail-title { font-size: 20px; } }
   </style>
 </head>
 <body>
-
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
-
 <div class="toast" id="toast"></div>
 
 <div id="loadingScreen" class="loading-screen">
@@ -609,30 +174,30 @@
       </div>
     </div>
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')" id="tabLogin">دخول</button>
-      <button class="auth-tab" onclick="switchTab('register')" id="tabRegister">حساب جديد</button>
+      <button class="auth-tab active" id="tabLogin">دخول</button>
+      <button class="auth-tab" id="tabRegister">حساب جديد</button>
     </div>
     <div id="loginForm">
       <div class="field-group">
         <label class="field-label">الإيميل</label>
-        <input class="field-input" type="email" id="loginEmail" placeholder="example@email.com" dir="ltr" />
+        <input class="field-input" type="email" id="loginEmail" placeholder="example@email.com" dir="ltr" autocomplete="email" />
       </div>
       <div class="field-group">
         <label class="field-label">كلمة المرور</label>
-        <input class="field-input" type="password" id="loginPass" placeholder="••••••••" dir="ltr" />
+        <input class="field-input" type="password" id="loginPass" placeholder="••••••••" dir="ltr" autocomplete="current-password" />
       </div>
-      <button class="auth-btn" onclick="doLogin()" id="loginBtn">دخول</button>
+      <button class="auth-btn" id="loginBtn">دخول</button>
     </div>
     <div id="registerForm" class="hidden">
       <div class="field-group">
         <label class="field-label">الإيميل</label>
-        <input class="field-input" type="email" id="regEmail" placeholder="example@email.com" dir="ltr" />
+        <input class="field-input" type="email" id="regEmail" placeholder="example@email.com" dir="ltr" autocomplete="email" />
       </div>
       <div class="field-group">
         <label class="field-label">كلمة المرور</label>
-        <input class="field-input" type="password" id="regPass" placeholder="6 أحرف على الأقل" dir="ltr" />
+        <input class="field-input" type="password" id="regPass" placeholder="6 أحرف على الأقل" dir="ltr" autocomplete="new-password" />
       </div>
-      <button class="auth-btn" onclick="doRegister()" id="regBtn">إنشاء حساب</button>
+      <button class="auth-btn" id="regBtn">إنشاء حساب</button>
     </div>
     <div class="auth-error" id="authError"></div>
   </div>
@@ -647,24 +212,22 @@
       </div>
       <div class="header-right">
         <span class="user-chip" id="userEmail"></span>
-        <button class="btn-primary hidden" id="newBtn" onclick="openForm(null)">+ جديد</button>
-        <button class="btn-ghost hidden" id="backBtn" onclick="showView('list')">← رجوع</button>
-        <button class="btn-danger-ghost" id="logoutBtn" onclick="doLogout()">خروج</button>
+        <button class="btn-primary hidden" id="newBtn">+ جديد</button>
+        <button class="btn-ghost hidden" id="backBtn">← رجوع</button>
+        <button class="btn-danger-ghost" id="logoutBtn">خروج</button>
       </div>
     </div>
   </header>
-
   <div class="container">
     <div id="listView">
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input class="search-input" id="searchInput" placeholder="ابحث في السكربتات..." oninput="renderList()" />
+        <input class="search-input" id="searchInput" placeholder="ابحث في السكربتات..." />
       </div>
       <div class="pills" id="pills"></div>
       <div class="stats-grid" id="statsRow"></div>
       <div class="grid" id="grid"></div>
     </div>
-
     <div id="formView" class="hidden">
       <div class="form-card">
         <div class="form-header">
@@ -672,73 +235,45 @@
           <div class="form-subtitle">اكتب سكربتك بالتفصيل لأفضل نتيجة</div>
         </div>
         <div class="form-field">
-          <label class="form-label">
-            <span class="form-label-dot" style="background:var(--accent)"></span>
-            عنوان السكربت
-          </label>
-          <input class="form-input" type="text" id="fTitle" placeholder="موضوع الفيديو..." />
+          <label class="form-label"><span class="form-label-dot" style="background:var(--accent)"></span>عنوان السكربت</label>
+          <input class="form-input" type="text" id="fTitle" placeholder="موضوع الفيديو..." maxlength="200" />
         </div>
         <div class="row2">
           <div class="form-field">
-            <label class="form-label">
-              <span class="form-label-dot" style="background:var(--yellow)"></span>
-              المنصة
-            </label>
+            <label class="form-label"><span class="form-label-dot" style="background:var(--yellow)"></span>المنصة</label>
             <select class="form-select" id="fPlatform">
-              <option>شورتس</option><option>ريلز</option>
-              <option>تيك توك</option><option>يوتيوب</option>
+              <option>شورتس</option><option>ريلز</option><option>تيك توك</option><option>يوتيوب</option>
             </select>
           </div>
           <div class="form-field">
-            <label class="form-label">
-              <span class="form-label-dot" style="background:var(--purple)"></span>
-              التصنيف
-            </label>
+            <label class="form-label"><span class="form-label-dot" style="background:var(--purple)"></span>التصنيف</label>
             <select class="form-select" id="fCategory">
-              <option>تقني</option><option>تعليمي</option>
-              <option>ترفيهي</option><option>نصائح</option>
+              <option>تقني</option><option>تعليمي</option><option>ترفيهي</option><option>نصائح</option>
             </select>
           </div>
         </div>
         <div class="script-section">
-          <div class="section-header">
-            <div class="section-dot" style="background:#fb7185"></div>
-            <span class="section-header-label" style="color:#fb7185">Hook — الخطاف</span>
-            <span class="section-header-tag">0-3 ثواني</span>
-          </div>
-          <textarea class="section-textarea" id="fHook" placeholder="الجملة الأولى اللي تجذب المشاهد..."></textarea>
+          <div class="section-header"><div class="section-dot" style="background:#fb7185"></div><span class="section-header-label" style="color:#fb7185">Hook — الخطاف</span><span class="section-header-tag">0-3 ثواني</span></div>
+          <textarea class="section-textarea" id="fHook" placeholder="الجملة الأولى اللي تجذب المشاهد..." maxlength="2000"></textarea>
         </div>
         <div class="script-section">
-          <div class="section-header">
-            <div class="section-dot" style="background:#38bdf8"></div>
-            <span class="section-header-label" style="color:#38bdf8">Value — المحتوى</span>
-            <span class="section-header-tag">الجوهر</span>
-          </div>
-          <textarea class="section-textarea" id="fValue" placeholder="الخطوات أو المعلومات..."></textarea>
+          <div class="section-header"><div class="section-dot" style="background:#38bdf8"></div><span class="section-header-label" style="color:#38bdf8">Value — المحتوى</span><span class="section-header-tag">الجوهر</span></div>
+          <textarea class="section-textarea" id="fValue" placeholder="الخطوات أو المعلومات..." maxlength="5000"></textarea>
         </div>
         <div class="script-section">
-          <div class="section-header">
-            <div class="section-dot" style="background:#34d399"></div>
-            <span class="section-header-label" style="color:#34d399">Result — النتيجة</span>
-            <span class="section-header-tag">الفائدة</span>
-          </div>
-          <textarea class="section-textarea" id="fResult" placeholder="شو بيصير بعد ما يطبق الشخص؟"></textarea>
+          <div class="section-header"><div class="section-dot" style="background:#34d399"></div><span class="section-header-label" style="color:#34d399">Result — النتيجة</span><span class="section-header-tag">الفائدة</span></div>
+          <textarea class="section-textarea" id="fResult" placeholder="شو بيصير بعد ما يطبق الشخص؟" maxlength="2000"></textarea>
         </div>
         <div class="script-section">
-          <div class="section-header">
-            <div class="section-dot" style="background:#a78bfa"></div>
-            <span class="section-header-label" style="color:#a78bfa">CTA — الدعوة للتفاعل</span>
-            <span class="section-header-tag">الختام</span>
-          </div>
-          <textarea class="section-textarea" id="fCta" placeholder="احفظ، شير، كومنت..."></textarea>
+          <div class="section-header"><div class="section-dot" style="background:#a78bfa"></div><span class="section-header-label" style="color:#a78bfa">CTA — الدعوة للتفاعل</span><span class="section-header-tag">الختام</span></div>
+          <textarea class="section-textarea" id="fCta" placeholder="احفظ، شير، كومنت..." maxlength="1000"></textarea>
         </div>
         <div class="form-actions">
-          <button class="btn-cancel" onclick="showView('list')">إلغاء</button>
-          <button class="btn-save" onclick="saveScript()" id="saveBtn">حفظ السكربت</button>
+          <button class="btn-cancel" id="cancelBtn">إلغاء</button>
+          <button class="btn-save" id="saveBtn">حفظ السكربت</button>
         </div>
       </div>
     </div>
-
     <div id="detailView" class="hidden">
       <div class="detail-card">
         <div class="detail-hero">
@@ -755,15 +290,26 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import {
-    getAuth, onAuthStateChanged,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword, signOut
-  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import {
-    getFirestore, collection, doc,
-    addDoc, getDocs, updateDoc, deleteDoc, query, where
-  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { getFirestore, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  // ✅ FIX 1: دالة تنظيف XSS
+  function esc(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#x27;").replace(/\//g,"&#x2F;");
+  }
+
+  // ✅ FIX 2: تنظيف المدخلات مع حد أقصى للطول
+  function sanitizeInput(str, maxLen = 5000) {
+    if (!str) return "";
+    return String(str).trim().slice(0, maxLen);
+  }
+
+  // ✅ FIX 3: Whitelist للقيم المسموحة فقط
+  const ALLOWED_PLATFORMS = ["شورتس","ريلز","تيك توك","يوتيوب"];
+  const ALLOWED_CATEGORIES = ["تقني","تعليمي","ترفيهي","نصائح"];
 
   const firebaseConfig = {
     apiKey: "AIzaSyBl_mMsUWLERxXveqYYeGxIrBEYArGp-WA",
@@ -780,26 +326,37 @@
   const db = getFirestore(app);
 
   const PLATFORM_COLORS = {
-    "شورتس": { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
-    "ريلز":  { bg: "#f472b620", text: "#f472b6", border: "#f472b640" },
-    "تيك توك": { bg: "#94a3b820", text: "#94a3b8", border: "#94a3b840" },
-    "يوتيوب": { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
+    "شورتس": { bg:"#fb718520",text:"#fb7185",border:"#fb718540" },
+    "ريلز":  { bg:"#f472b620",text:"#f472b6",border:"#f472b640" },
+    "تيك توك":{ bg:"#94a3b820",text:"#94a3b8",border:"#94a3b840" },
+    "يوتيوب":{ bg:"#fb718520",text:"#fb7185",border:"#fb718540" },
   };
-
   const CAT_COLORS = {
-    "تقني": { bg: "#38bdf820", text: "#38bdf8", border: "#38bdf840" },
-    "تعليمي": { bg: "#34d39920", text: "#34d399", border: "#34d39940" },
-    "ترفيهي": { bg: "#fbbf2420", text: "#fbbf24", border: "#fbbf2440" },
-    "نصائح": { bg: "#a78bfa20", text: "#a78bfa", border: "#a78bfa40" },
+    "تقني":  { bg:"#38bdf820",text:"#38bdf8",border:"#38bdf840" },
+    "تعليمي":{ bg:"#34d39920",text:"#34d399",border:"#34d39940" },
+    "ترفيهي":{ bg:"#fbbf2420",text:"#fbbf24",border:"#fbbf2440" },
+    "نصائح": { bg:"#a78bfa20",text:"#a78bfa",border:"#a78bfa40" },
   };
 
   let scripts = [], filterPlatform = "الكل", currentScript = null, editingId = null, currentUser = null;
+
+  // ✅ FIX 4: addEventListener بدل onclick inline
+  document.getElementById("tabLogin").addEventListener("click", () => switchTab("login"));
+  document.getElementById("tabRegister").addEventListener("click", () => switchTab("register"));
+  document.getElementById("loginBtn").addEventListener("click", doLogin);
+  document.getElementById("regBtn").addEventListener("click", doRegister);
+  document.getElementById("logoutBtn").addEventListener("click", doLogout);
+  document.getElementById("newBtn").addEventListener("click", () => openForm(null));
+  document.getElementById("backBtn").addEventListener("click", () => showView("list"));
+  document.getElementById("saveBtn").addEventListener("click", saveScript);
+  document.getElementById("cancelBtn").addEventListener("click", () => showView("list"));
+  document.getElementById("searchInput").addEventListener("input", renderList);
 
   onAuthStateChanged(auth, (user) => {
     document.getElementById("loadingScreen").classList.add("hidden");
     if (user) {
       currentUser = user;
-      document.getElementById("userEmail").textContent = user.email;
+      document.getElementById("userEmail").textContent = user.email; // ✅ textContent
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("appScreen").classList.remove("hidden");
       renderList();
@@ -811,48 +368,63 @@
     }
   });
 
-  window.switchTab = (tab) => {
+  function switchTab(tab) {
     document.getElementById("loginForm").classList.toggle("hidden", tab !== "login");
     document.getElementById("registerForm").classList.toggle("hidden", tab !== "register");
     document.getElementById("tabLogin").classList.toggle("active", tab === "login");
     document.getElementById("tabRegister").classList.toggle("active", tab === "register");
     document.getElementById("authError").style.display = "none";
-  };
+  }
 
-  window.doLogin = async () => {
+  // ✅ FIX 5: Rate limiting على محاولات الدخول
+  let loginAttempts = 0, loginBlockedUntil = 0;
+
+  async function doLogin() {
+    const now = Date.now();
+    if (now < loginBlockedUntil) {
+      return showAuthError(`كثير محاولات، انتظر ${Math.ceil((loginBlockedUntil - now) / 1000)} ثانية`);
+    }
     const email = document.getElementById("loginEmail").value.trim();
-    const pass = document.getElementById("loginPass").value;
-    const btn = document.getElementById("loginBtn");
+    const pass  = document.getElementById("loginPass").value;
+    const btn   = document.getElementById("loginBtn");
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
     btn.disabled = true; btn.textContent = "جاري الدخول...";
     try {
       await signInWithEmailAndPassword(auth, email, pass);
+      loginAttempts = 0;
     } catch (e) {
-      showAuthError("بيانات الدخول غلط، حاول مرة ثانية");
+      loginAttempts++;
+      if (loginAttempts >= 5) { loginBlockedUntil = Date.now() + 30000; loginAttempts = 0; showAuthError("تجاوزت عدد المحاولات، انتظر 30 ثانية"); }
+      else showAuthError("بيانات الدخول غلط، حاول مرة ثانية");
       btn.disabled = false; btn.textContent = "دخول";
     }
-  };
+  }
 
-  window.doRegister = async () => {
+  async function doRegister() {
     const email = document.getElementById("regEmail").value.trim();
-    const pass = document.getElementById("regPass").value;
-    const btn = document.getElementById("regBtn");
+    const pass  = document.getElementById("regPass").value;
+    const btn   = document.getElementById("regBtn");
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
     if (pass.length < 6) return showAuthError("كلمة المرور لازم تكون 6 أحرف أو أكثر");
+    // ✅ FIX 6: تحقق من صيغة الإيميل
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showAuthError("صيغة الإيميل غلط");
     btn.disabled = true; btn.textContent = "جاري الإنشاء...";
     try {
       await createUserWithEmailAndPassword(auth, email, pass);
     } catch (e) {
-      showAuthError("حدث خطأ: " + e.code);
+      // ✅ FIX 7: رسائل خطأ واضحة بدون error.code الخام
+      const msgs = { "auth/email-already-in-use":"هذا الإيميل مسجل بالفعل", "auth/invalid-email":"صيغة الإيميل غير صحيحة", "auth/weak-password":"كلمة المرور ضعيفة" };
+      showAuthError(msgs[e.code] || "حدث خطأ، حاول مرة ثانية");
       btn.disabled = false; btn.textContent = "إنشاء حساب";
     }
-  };
+  }
 
-  window.doLogout = async () => { await signOut(auth); scripts = []; };
+  async function doLogout() { await signOut(auth); scripts = []; }
 
   function showAuthError(msg) {
     const el = document.getElementById("authError");
-    el.textContent = msg; el.style.display = "block";
+    el.textContent = msg; // ✅ textContent
+    el.style.display = "block";
   }
 
   async function loadScripts() {
@@ -882,13 +454,14 @@
     try { await deleteDoc(doc(db, "scripts", id)); } catch (e) {}
   }
 
-  window.showToast = (msg) => {
+  function showToast(msg) {
     const t = document.getElementById("toast");
-    t.textContent = msg; t.classList.add("show");
+    t.textContent = msg; // ✅ textContent
+    t.classList.add("show");
     setTimeout(() => t.classList.remove("show"), 2600);
-  };
+  }
 
-  window.showView = (view) => {
+  function showView(view) {
     ["listView","formView","detailView"].forEach(v =>
       document.getElementById(v).classList.toggle("hidden", v !== view + "View")
     );
@@ -898,7 +471,7 @@
     if (view === "list") renderList();
     if (view === "form") initAutoResize();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }
 
   function initAutoResize() {
     setTimeout(() => {
@@ -909,7 +482,7 @@
     }, 50);
   }
 
-  window.renderList = () => {
+  function renderList() {
     renderPills(); renderStats();
     const search = document.getElementById("searchInput").value.toLowerCase();
     const filtered = scripts.filter(s => {
@@ -918,115 +491,120 @@
     });
 
     const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+
     if (filtered.length === 0) {
-      grid.innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">${scripts.length === 0 ? "✍️" : "🔍"}</div>
-          <div class="empty-title">${scripts.length === 0 ? "ابدأ مكتبتك الآن" : "ما في نتائج"}</div>
-          <div class="empty-sub">${scripts.length === 0 ? "أضف أول سكربت وابدأ بناء محتواك" : "جرب كلمة بحث ثانية"}</div>
-          ${scripts.length === 0 ? `<button class="btn-primary" onclick="openForm(null)">+ أضف أول سكربت</button>` : ""}
-        </div>`;
-      return;
+      // ✅ FIX 8: DOM API بدل innerHTML
+      const empty = document.createElement("div"); empty.className = "empty";
+      const icon = document.createElement("div"); icon.className = "empty-icon"; icon.textContent = scripts.length === 0 ? "✍️" : "🔍";
+      const title = document.createElement("div"); title.className = "empty-title"; title.textContent = scripts.length === 0 ? "ابدأ مكتبتك الآن" : "ما في نتائج";
+      const sub = document.createElement("div"); sub.className = "empty-sub"; sub.textContent = scripts.length === 0 ? "أضف أول سكربت وابدأ بناء محتواك" : "جرب كلمة بحث ثانية";
+      empty.append(icon, title, sub);
+      if (scripts.length === 0) {
+        const btn = document.createElement("button"); btn.className = "btn-primary"; btn.textContent = "+ أضف أول سكربت";
+        btn.addEventListener("click", () => openForm(null)); empty.appendChild(btn);
+      }
+      grid.appendChild(empty); return;
     }
 
-    grid.innerHTML = filtered.map(s => {
+    // ✅ FIX 9: بناء الكاردات بـ DOM API — صفر XSS
+    filtered.forEach(s => {
       const pc = PLATFORM_COLORS[s.platform] || PLATFORM_COLORS["شورتس"];
       const cc = CAT_COLORS[s.category] || CAT_COLORS["تقني"];
       const total = wordCount(`${s.hook||""} ${s.value||""} ${s.result||""} ${s.cta||""}`);
-      return `
-        <div class="card" onclick="openDetail('${s.firestoreId}')">
-          <div class="card-accent-line" style="background:${pc.text}"></div>
-          <div class="card-top">
-            <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${s.platform}</span>
-            <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border}">${s.category}</span>
-            <span class="date-text">${s.date}</span>
-          </div>
-          <div class="card-title">${s.title}</div>
-          ${s.hook ? `<div class="card-hook">${s.hook.slice(0,90)}${s.hook.length>90?"...":""}</div>` : ""}
-          <div class="card-footer">
-            <span class="word-count">${total} كلمة</span>
-            <span class="card-arrow">←</span>
-          </div>
-        </div>`;
-    }).join("");
-  };
+
+      const card = document.createElement("div"); card.className = "card";
+      const line = document.createElement("div"); line.className = "card-accent-line"; line.style.background = pc.text;
+      const top = document.createElement("div"); top.className = "card-top";
+      const pb = document.createElement("span"); pb.className = "badge"; pb.style.cssText = `background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}`; pb.textContent = s.platform;
+      const cb = document.createElement("span"); cb.className = "badge"; cb.style.cssText = `background:${cc.bg};color:${cc.text};border:1px solid ${cc.border}`; cb.textContent = s.category;
+      const dt = document.createElement("span"); dt.className = "date-text"; dt.textContent = s.date;
+      top.append(pb, cb, dt);
+      const titleEl = document.createElement("div"); titleEl.className = "card-title"; titleEl.textContent = s.title; // ✅ textContent
+      card.append(line, top, titleEl);
+      if (s.hook) {
+        const hookEl = document.createElement("div"); hookEl.className = "card-hook";
+        hookEl.textContent = s.hook.slice(0,90) + (s.hook.length > 90 ? "..." : ""); // ✅ textContent
+        card.appendChild(hookEl);
+      }
+      const footer = document.createElement("div"); footer.className = "card-footer";
+      const wc = document.createElement("span"); wc.className = "word-count"; wc.textContent = `${total} كلمة`;
+      const arr = document.createElement("span"); arr.className = "card-arrow"; arr.textContent = "←";
+      footer.append(wc, arr); card.appendChild(footer);
+      card.addEventListener("click", () => openDetail(s.firestoreId));
+      grid.appendChild(card);
+    });
+  }
 
   function renderPills() {
-    const pills = ["الكل","شورتس","ريلز","تيك توك","يوتيوب"];
-    document.getElementById("pills").innerHTML = pills.map(p =>
-      `<button class="pill ${filterPlatform===p?'active':''}" onclick="setFilter('${p}')">${p}</button>`
-    ).join("");
+    const container = document.getElementById("pills"); container.innerHTML = "";
+    ["الكل","شورتس","ريلز","تيك توك","يوتيوب"].forEach(p => {
+      const btn = document.createElement("button"); btn.className = "pill" + (filterPlatform === p ? " active" : ""); btn.textContent = p;
+      btn.addEventListener("click", () => { filterPlatform = p; renderList(); }); container.appendChild(btn);
+    });
   }
-
-  window.setFilter = (p) => { filterPlatform = p; renderList(); };
 
   function renderStats() {
-    const platforms = ["شورتس","ريلز","تيك توك","يوتيوب"];
-    document.getElementById("statsRow").innerHTML = `
-      <div class="stat-card">
-        <span class="stat-num">${scripts.length}</span>
-        <span class="stat-label">المجموع</span>
-      </div>
-      ${platforms.map(p => `
-        <div class="stat-card">
-          <span class="stat-num">${scripts.filter(s=>s.platform===p).length}</span>
-          <span class="stat-label">${p}</span>
-        </div>`).join("")}`;
+    const row = document.getElementById("statsRow"); row.innerHTML = "";
+    const mk = (n, l) => {
+      const c = document.createElement("div"); c.className = "stat-card";
+      const num = document.createElement("span"); num.className = "stat-num"; num.textContent = n;
+      const lbl = document.createElement("span"); lbl.className = "stat-label"; lbl.textContent = l;
+      c.append(num, lbl); return c;
+    };
+    row.appendChild(mk(scripts.length, "المجموع"));
+    ["شورتس","ريلز","تيك توك","يوتيوب"].forEach(p => row.appendChild(mk(scripts.filter(s=>s.platform===p).length, p)));
   }
 
-  function wordCount(text) {
-    return text.trim().split(/\s+/).filter(Boolean).length;
-  }
+  function wordCount(text) { return text.trim().split(/\s+/).filter(Boolean).length; }
 
   function openForm(script) {
     editingId = script ? script.firestoreId : null;
     document.getElementById("formTitle").textContent = script ? "تعديل السكربت" : "سكربت جديد";
-    document.getElementById("fTitle").value = script?.title || "";
+    document.getElementById("fTitle").value    = script?.title    || "";
     document.getElementById("fPlatform").value = script?.platform || "شورتس";
     document.getElementById("fCategory").value = script?.category || "تقني";
-    document.getElementById("fHook").value = script?.hook || "";
-    document.getElementById("fValue").value = script?.value || "";
-    document.getElementById("fResult").value = script?.result || "";
-    document.getElementById("fCta").value = script?.cta || "";
+    document.getElementById("fHook").value     = script?.hook     || "";
+    document.getElementById("fValue").value    = script?.value    || "";
+    document.getElementById("fResult").value   = script?.result   || "";
+    document.getElementById("fCta").value      = script?.cta      || "";
     showView("form");
   }
-  window.openForm = openForm;
 
-  window.saveScript = async () => {
-    const title = document.getElementById("fTitle").value.trim();
+  async function saveScript() {
+    const title = sanitizeInput(document.getElementById("fTitle").value, 200);
     if (!title) return showToast("⚠️ أضف عنوان للسكربت");
+    const platform = document.getElementById("fPlatform").value;
+    const category = document.getElementById("fCategory").value;
+    // ✅ FIX 10: تحقق من Whitelist
+    if (!ALLOWED_PLATFORMS.includes(platform)) return showToast("⚠️ منصة غير صحيحة");
+    if (!ALLOWED_CATEGORIES.includes(category)) return showToast("⚠️ تصنيف غير صحيح");
+
     const btn = document.getElementById("saveBtn");
     btn.disabled = true; btn.textContent = "جاري الحفظ...";
 
     const script = {
-      title,
-      platform: document.getElementById("fPlatform").value,
-      category: document.getElementById("fCategory").value,
-      hook: document.getElementById("fHook").value,
-      value: document.getElementById("fValue").value,
-      result: document.getElementById("fResult").value,
-      cta: document.getElementById("fCta").value,
-      date: new Date().toLocaleDateString("ar-IQ"),
-      uid: currentUser.uid,
-      id: editingId ? (scripts.find(s=>s.firestoreId===editingId)?.id||Date.now()) : Date.now(),
+      title, platform, category,
+      hook:   sanitizeInput(document.getElementById("fHook").value,   2000),
+      value:  sanitizeInput(document.getElementById("fValue").value,  5000),
+      result: sanitizeInput(document.getElementById("fResult").value, 2000),
+      cta:    sanitizeInput(document.getElementById("fCta").value,    1000),
+      date:   new Date().toLocaleDateString("ar-IQ"),
+      uid:    currentUser.uid,
+      id: editingId ? (scripts.find(s=>s.firestoreId===editingId)?.id || Date.now()) : Date.now(),
     };
     if (editingId) script.firestoreId = editingId;
 
     const fid = await saveToFirestore(script);
     if (fid) {
       script.firestoreId = fid;
-      scripts = editingId
-        ? scripts.map(s => s.firestoreId===editingId ? script : s)
-        : [script, ...scripts];
-      showToast("✅ تم الحفظ");
-      showView("list");
-    } else {
-      showToast("❌ ما تم الحفظ، حاول مرة ثانية");
-    }
+      scripts = editingId ? scripts.map(s => s.firestoreId===editingId ? script : s) : [script, ...scripts];
+      showToast("✅ تم الحفظ"); showView("list");
+    } else { showToast("❌ ما تم الحفظ، حاول مرة ثانية"); }
     btn.disabled = false; btn.textContent = "حفظ السكربت";
-  };
+  }
 
-  window.openDetail = (firestoreId) => {
+  function openDetail(firestoreId) {
     const script = scripts.find(s => s.firestoreId === firestoreId);
     if (!script) return;
     currentScript = script;
@@ -1034,49 +612,47 @@
     const pc = PLATFORM_COLORS[script.platform] || PLATFORM_COLORS["شورتس"];
     const cc = CAT_COLORS[script.category] || CAT_COLORS["تقني"];
 
-    document.getElementById("dBadges").innerHTML = `
-      <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${script.platform}</span>
-      <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border};margin-right:6px">${script.category}</span>
-      <span class="detail-date">${script.date}</span>`;
+    // ✅ FIX 11: DOM API بدل innerHTML في صفحة التفاصيل
+    const badgesDiv = document.getElementById("dBadges"); badgesDiv.innerHTML = "";
+    const pb = document.createElement("span"); pb.className = "badge"; pb.style.cssText = `background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}`; pb.textContent = script.platform;
+    const cb = document.createElement("span"); cb.className = "badge"; cb.style.cssText = `background:${cc.bg};color:${cc.text};border:1px solid ${cc.border};margin-right:6px`; cb.textContent = script.category;
+    const dt = document.createElement("span"); dt.className = "detail-date"; dt.textContent = script.date;
+    badgesDiv.append(pb, cb, dt);
 
-    document.getElementById("dTitle").textContent = script.title;
+    document.getElementById("dTitle").textContent = script.title; // ✅ textContent
 
-    const sections = [
+    const bodyDiv = document.getElementById("dSections"); bodyDiv.innerHTML = "";
+    [
       { key:"hook",   label:"Hook — الخطاف",    color:"#fb7185" },
       { key:"value",  label:"Value — المحتوى",  color:"#38bdf8" },
       { key:"result", label:"Result — النتيجة", color:"#34d399" },
       { key:"cta",    label:"CTA — الدعوة",     color:"#a78bfa" },
-    ];
+    ].filter(s => script[s.key]).forEach(s => {
+      const sec = document.createElement("div"); sec.className = "detail-section";
+      const head = document.createElement("div"); head.className = "detail-section-head";
+      const dot = document.createElement("div"); dot.className = "detail-section-dot"; dot.style.background = s.color;
+      const lbl = document.createElement("span"); lbl.className = "detail-section-label"; lbl.textContent = s.label;
+      head.append(dot, lbl);
+      const body = document.createElement("div"); body.className = "detail-section-body";
+      body.textContent = script[s.key]; // ✅ textContent — آمن تماماً
+      sec.append(head, body); bodyDiv.appendChild(sec);
+    });
 
-    document.getElementById("dSections").innerHTML = sections
-      .filter(s => script[s.key])
-      .map(s => `
-        <div class="detail-section">
-          <div class="detail-section-head">
-            <div class="detail-section-dot" style="background:${s.color}"></div>
-            <span class="detail-section-label">${s.label}</span>
-          </div>
-          <div class="detail-section-body">${script[s.key]}</div>
-        </div>`).join("");
-
-    const actionsDiv = document.getElementById("detailActions");
-    actionsDiv.innerHTML = `
-      <button class="btn-delete" id="btnDelete">حذف</button>
-      <button class="btn-edit" id="btnEdit">تعديل السكربت</button>`;
-
-    document.getElementById("btnEdit").addEventListener("click", () => openForm(currentScript));
-    document.getElementById("btnDelete").addEventListener("click", () => deleteCurrentScript());
+    const actionsDiv = document.getElementById("detailActions"); actionsDiv.innerHTML = "";
+    const delBtn = document.createElement("button"); delBtn.className = "btn-delete"; delBtn.textContent = "حذف";
+    delBtn.addEventListener("click", deleteCurrentScript);
+    const editBtn = document.createElement("button"); editBtn.className = "btn-edit"; editBtn.textContent = "تعديل السكربت";
+    editBtn.addEventListener("click", () => openForm(currentScript));
+    actionsDiv.append(delBtn, editBtn);
 
     showView("detail");
-  };
+  }
 
   async function deleteCurrentScript() {
     if (!currentScript || !confirm("متأكد من حذف هذا السكربت؟")) return;
     await deleteFromFirestore(currentScript.firestoreId);
     scripts = scripts.filter(s => s.firestoreId !== currentScript.firestoreId);
-    showToast("🗑️ تم الحذف");
-    currentScript = null;
-    showView("list");
+    showToast("🗑️ تم الحذف"); currentScript = null; showView("list");
   }
 </script>
 </body>
