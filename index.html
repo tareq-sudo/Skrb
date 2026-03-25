@@ -146,6 +146,12 @@
       background: #fb718512; border: 1px solid #fb718530;
       color: var(--red); font-size: 13px; display: none;
     }
+    .auth-success {
+      margin-top: 14px; padding: 12px 16px; border-radius: 12px;
+      background: #34d39912; border: 1px solid #34d39930;
+      color: var(--green); font-size: 13px; display: none;
+    }
+
     #appScreen { position: relative; z-index: 1; }
 
     header {
@@ -263,6 +269,7 @@
     }
     .empty-title { font-size: 18px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
     .empty-sub { font-size: 14px; color: var(--text3); margin-bottom: 24px; }
+
     .form-card {
       background: var(--surface); border: 1px solid var(--border2);
       border-radius: 24px; padding: 28px;
@@ -319,8 +326,7 @@
     .section-textarea {
       width: 100%; padding: 14px 16px; background: var(--bg2);
       border: none; font-family: inherit; font-size: 14px;
-      color: #e2eaf5;
-      outline: none; resize: none; line-height: 1.8;
+      color: #e2eaf5; outline: none; resize: none; line-height: 1.8;
       min-height: 75px; overflow: hidden;
     }
     .section-textarea::placeholder { color: var(--text3); }
@@ -418,10 +424,10 @@
   </style>
 </head>
 <body>
+
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
-
 <div class="toast" id="toast"></div>
 
 <div id="loadingScreen" class="loading-screen">
@@ -465,6 +471,7 @@
       <button class="auth-btn" onclick="doRegister()" id="regBtn">إنشاء حساب</button>
     </div>
     <div class="auth-error" id="authError"></div>
+    <div class="auth-success" id="authSuccess"></div>
   </div>
 </div>
 
@@ -582,6 +589,7 @@
     </div>
   </div>
 </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import {
@@ -608,25 +616,41 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // ✅ حماية XSS
+  function escapeHtml(t) {
+    return (t||"")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
   const PLATFORM_COLORS = {
-    "شورتس": { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
-    "ريلز":  { bg: "#f472b620", text: "#f472b6", border: "#f472b640" },
-    "تيك توك": { bg: "#94a3b820", text: "#94a3b8", border: "#94a3b840" },
-    "يوتيوب": { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
+    "شورتس": { bg:"#fb718520", text:"#fb7185", border:"#fb718540" },
+    "ريلز":  { bg:"#f472b620", text:"#f472b6", border:"#f472b640" },
+    "تيك توك":{ bg:"#94a3b820", text:"#94a3b8", border:"#94a3b840" },
+    "يوتيوب":{ bg:"#fb718520", text:"#fb7185", border:"#fb718540" },
   };
 
   const CAT_COLORS = {
-    "تقني": { bg: "#38bdf820", text: "#38bdf8", border: "#38bdf840" },
-    "تعليمي": { bg: "#34d39920", text: "#34d399", border: "#34d39940" },
-    "ترفيهي": { bg: "#fbbf2420", text: "#fbbf24", border: "#fbbf2440" },
-    "نصائح": { bg: "#a78bfa20", text: "#a78bfa", border: "#a78bfa40" },
+    "تقني":  { bg:"#38bdf820", text:"#38bdf8", border:"#38bdf840" },
+    "تعليمي":{ bg:"#34d39920", text:"#34d399", border:"#34d39940" },
+    "ترفيهي":{ bg:"#fbbf2420", text:"#fbbf24", border:"#fbbf2440" },
+    "نصائح": { bg:"#a78bfa20", text:"#a78bfa", border:"#a78bfa40" },
   };
 
-  let scripts = [], filterPlatform = "الكل", currentScript = null, editingId = null, currentUser = null;
+  let scripts=[], filterPlatform="الكل", currentScript=null, editingId=null, currentUser=null;
 
   onAuthStateChanged(auth, (user) => {
     document.getElementById("loadingScreen").classList.add("hidden");
     if (user) {
+      if (!user.emailVerified) {
+        showAuthError("⚠️ إيميلك لم يُفعَّل، تحقق من بريدك");
+        signOut(auth);
+        document.getElementById("authScreen").classList.remove("hidden");
+        return;
+      }
       currentUser = user;
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
@@ -646,6 +670,7 @@
     document.getElementById("tabLogin").classList.toggle("active", tab === "login");
     document.getElementById("tabRegister").classList.toggle("active", tab === "register");
     document.getElementById("authError").style.display = "none";
+    document.getElementById("authSuccess").style.display = "none";
   };
 
   window.doLogin = async () => {
@@ -655,7 +680,13 @@
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
     btn.disabled = true; btn.textContent = "جاري الدخول...";
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
+      const userCred = await signInWithEmailAndPassword(auth, email, pass);
+      if (!userCred.user.emailVerified) {
+        await signOut(auth);
+        showAuthError("⚠️ إيميلك لم يُفعَّل بعد، تحقق من بريدك");
+        btn.disabled = false; btn.textContent = "دخول";
+        return;
+      }
     } catch (e) {
       showAuthError("بيانات الدخول غلط، حاول مرة ثانية");
       btn.disabled = false; btn.textContent = "دخول";
@@ -670,7 +701,11 @@
     if (pass.length < 6) return showAuthError("كلمة المرور لازم تكون 6 أحرف أو أكثر");
     btn.disabled = true; btn.textContent = "جاري الإنشاء...";
     try {
-      await createUserWithEmailAndPassword(auth, email, pass);
+      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+      await userCred.user.sendEmailVerification();
+      await signOut(auth);
+      showAuthSuccess("✅ تم الإرسال! تحقق من إيميلك وفعّل حسابك قبل الدخول");
+      btn.disabled = false; btn.textContent = "إنشاء حساب";
     } catch (e) {
       showAuthError("حدث خطأ: " + e.code);
       btn.disabled = false; btn.textContent = "إنشاء حساب";
@@ -681,34 +716,43 @@
 
   function showAuthError(msg) {
     const el = document.getElementById("authError");
+    const ok = document.getElementById("authSuccess");
+    ok.style.display = "none";
+    el.textContent = msg; el.style.display = "block";
+  }
+
+  function showAuthSuccess(msg) {
+    const el = document.getElementById("authSuccess");
+    const err = document.getElementById("authError");
+    err.style.display = "none";
     el.textContent = msg; el.style.display = "block";
   }
 
   async function loadScripts() {
     if (!currentUser) return;
     try {
-      const q = query(collection(db, "scripts"), where("uid", "==", currentUser.uid));
+      const q = query(collection(db,"scripts"), where("uid","==",currentUser.uid));
       const snap = await getDocs(q);
       scripts = snap.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
-      scripts.sort((a, b) => b.id - a.id);
-    } catch (e) { scripts = []; }
+      scripts.sort((a,b) => b.id - a.id);
+    } catch(e) { scripts = []; }
   }
 
   async function saveToFirestore(script) {
     try {
       if (script.firestoreId) {
         const { firestoreId, ...data } = script;
-        await updateDoc(doc(db, "scripts", firestoreId), data);
+        await updateDoc(doc(db,"scripts",firestoreId), data);
         return firestoreId;
       } else {
-        const ref = await addDoc(collection(db, "scripts"), script);
+        const ref = await addDoc(collection(db,"scripts"), script);
         return ref.id;
       }
-    } catch (e) { console.error("Save:", e); }
+    } catch(e) { console.error("Save:",e); }
   }
 
   async function deleteFromFirestore(id) {
-    try { await deleteDoc(doc(db, "scripts", id)); } catch (e) {}
+    try { await deleteDoc(doc(db,"scripts",id)); } catch(e) {}
   }
 
   window.showToast = (msg) => {
@@ -719,20 +763,20 @@
 
   window.showView = (view) => {
     ["listView","formView","detailView"].forEach(v =>
-      document.getElementById(v).classList.toggle("hidden", v !== view + "View")
+      document.getElementById(v).classList.toggle("hidden", v !== view+"View")
     );
     document.getElementById("newBtn").classList.toggle("hidden", view !== "list");
     document.getElementById("logoutBtn").classList.toggle("hidden", view !== "list");
     document.getElementById("backBtn").classList.toggle("hidden", view === "list");
     if (view === "list") renderList();
     if (view === "form") initAutoResize();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top:0, behavior:"smooth" });
   };
 
   function initAutoResize() {
     setTimeout(() => {
       document.querySelectorAll("textarea").forEach(tx => {
-        const resize = () => { tx.style.height = "auto"; tx.style.height = tx.scrollHeight + "px"; };
+        const resize = () => { tx.style.height="auto"; tx.style.height=tx.scrollHeight+"px"; };
         resize(); tx.oninput = resize;
       });
     }, 50);
@@ -750,10 +794,10 @@
     if (filtered.length === 0) {
       grid.innerHTML = `
         <div class="empty">
-          <div class="empty-icon">${scripts.length === 0 ? "✍️" : "🔍"}</div>
-          <div class="empty-title">${scripts.length === 0 ? "ابدأ مكتبتك الآن" : "ما في نتائج"}</div>
-          <div class="empty-sub">${scripts.length === 0 ? "أضف أول سكربت وابدأ بناء محتواك" : "جرب كلمة بحث ثانية"}</div>
-          ${scripts.length === 0 ? `<button class="btn-primary" onclick="openForm(null)">+ أضف أول سكربت</button>` : ""}
+          <div class="empty-icon">${scripts.length===0?"✍️":"🔍"}</div>
+          <div class="empty-title">${scripts.length===0?"ابدأ مكتبتك الآن":"ما في نتائج"}</div>
+          <div class="empty-sub">${scripts.length===0?"أضف أول سكربت وابدأ بناء محتواك":"جرب كلمة بحث ثانية"}</div>
+          ${scripts.length===0?`<button class="btn-primary" onclick="openForm(null)">+ أضف أول سكربت</button>`:""}
         </div>`;
       return;
     }
@@ -766,12 +810,12 @@
         <div class="card" onclick="openDetail('${s.firestoreId}')">
           <div class="card-accent-line" style="background:${pc.text}"></div>
           <div class="card-top">
-            <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${s.platform}</span>
-            <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border}">${s.category}</span>
-            <span class="date-text">${s.date}</span>
+            <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${escapeHtml(s.platform)}</span>
+            <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border}">${escapeHtml(s.category)}</span>
+            <span class="date-text">${escapeHtml(s.date)}</span>
           </div>
-          <div class="card-title">${s.title}</div>
-          ${s.hook ? `<div class="card-hook">${s.hook.slice(0,90)}${s.hook.length>90?"...":""}</div>` : ""}
+          <div class="card-title">${escapeHtml(s.title)}</div>
+          ${s.hook?`<div class="card-hook">${escapeHtml(s.hook.slice(0,90))}${s.hook.length>90?"...":""}</div>`:""}
           <div class="card-footer">
             <span class="word-count">${total} كلمة</span>
             <span class="card-arrow">←</span>
@@ -796,7 +840,7 @@
         <span class="stat-num">${scripts.length}</span>
         <span class="stat-label">المجموع</span>
       </div>
-      ${platforms.map(p => `
+      ${platforms.map(p=>`
         <div class="stat-card">
           <span class="stat-num">${scripts.filter(s=>s.platform===p).length}</span>
           <span class="stat-label">${p}</span>
@@ -864,9 +908,9 @@
     const cc = CAT_COLORS[script.category] || CAT_COLORS["تقني"];
 
     document.getElementById("dBadges").innerHTML = `
-      <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${script.platform}</span>
-      <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border};margin-right:6px">${script.category}</span>
-      <span class="detail-date">${script.date}</span>`;
+      <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${escapeHtml(script.platform)}</span>
+      <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border};margin-right:6px">${escapeHtml(script.category)}</span>
+      <span class="detail-date">${escapeHtml(script.date)}</span>`;
 
     document.getElementById("dTitle").textContent = script.title;
 
@@ -885,7 +929,7 @@
             <div class="detail-section-dot" style="background:${s.color}"></div>
             <span class="detail-section-label">${s.label}</span>
           </div>
-          <div class="detail-section-body">${script[s.key]}</div>
+          <div class="detail-section-body">${escapeHtml(script[s.key])}</div>
         </div>`).join("");
 
     const actionsDiv = document.getElementById("detailActions");
