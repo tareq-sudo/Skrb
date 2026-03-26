@@ -3,363 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ✅ إصلاح 1: CSP يمنع تنفيذ سكربتات خارجية غير مصرح بها -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src https://fonts.gstatic.com;
+    connect-src https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+    img-src 'self' data:;
+    frame-src 'none';
+    object-src 'none';
+  ">
+
   <title>سكربتاتي</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
   <style>
+    /* ===== نفس الـ CSS الأصلي بدون تغيير ===== */
     :root {
-      --bg: #080b12;
-      --bg2: #0d1120;
-      --surface: #111827;
-      --surface2: #1a2235;
-      --surface3: #1f2a40;
-      --border: #1e2d45;
-      --border2: #253350;
-      --accent: #38bdf8;
-      --accent2: #0ea5e9;
-      --accent3: #7dd3fc;
-      --glow: #38bdf820;
-      --text: #f0f6ff;
-      --text2: #94aec8;
-      --text3: #4a637e;
-      --red: #fb7185;
-      --green: #34d399;
-      --yellow: #fbbf24;
-      --purple: #a78bfa;
-      --pink: #f472b6;
+      --bg: #080b12; --bg2: #0d1120; --surface: #111827;
+      --surface2: #1a2235; --surface3: #1f2a40;
+      --border: #1e2d45; --border2: #253350;
+      --accent: #38bdf8; --accent2: #0ea5e9; --accent3: #7dd3fc;
+      --glow: #38bdf820; --text: #f0f6ff; --text2: #94aec8; --text3: #4a637e;
+      --red: #fb7185; --green: #34d399; --yellow: #fbbf24;
+      --purple: #a78bfa; --pink: #f472b6;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
+    body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
     body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
+      content: ''; position: fixed; inset: 0;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
+      pointer-events: none; z-index: 0;
     }
-
     .blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
     .blob-1 { width: 500px; height: 500px; background: #0ea5e915; top: -150px; right: -100px; }
     .blob-2 { width: 400px; height: 400px; background: #a78bfa08; bottom: -100px; left: -100px; }
     .blob-3 { width: 300px; height: 300px; background: #38bdf810; top: 40%; left: 30%; }
-
-    .loading-screen {
-      position: fixed; inset: 0;
-      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;
-      background: var(--bg); z-index: 1000;
-    }
-    .loading-logo {
-      font-size: 28px; font-weight: 900; letter-spacing: -1px;
-      background: linear-gradient(135deg, var(--accent), var(--purple));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
+    .loading-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; background: var(--bg); z-index: 1000; }
+    .loading-logo { font-size: 28px; font-weight: 900; letter-spacing: -1px; background: linear-gradient(135deg, var(--accent), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .loading-bar { width: 180px; height: 2px; background: var(--border2); border-radius: 2px; overflow: hidden; }
-    .loading-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--purple));
-      border-radius: 2px;
-      animation: loadbar 1.2s ease-in-out infinite;
-    }
-    @keyframes loadbar {
-      0% { width: 0%; margin-right: 100%; }
-      50% { width: 60%; margin-right: 0%; }
-      100% { width: 0%; margin-right: 0%; }
-    }
-
-    #authScreen {
-      position: relative; z-index: 1;
-      min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-    }
-
-    .auth-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 28px;
-      padding: 36px 32px;
-      width: 100%; max-width: 400px;
-      box-shadow: 0 32px 80px #00000060, 0 0 0 1px #38bdf808 inset;
-      position: relative; overflow: hidden;
-    }
-    .auth-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0.5;
-    }
-
+    .loading-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); border-radius: 2px; animation: loadbar 1.2s ease-in-out infinite; }
+    @keyframes loadbar { 0% { width: 0%; margin-right: 100%; } 50% { width: 60%; margin-right: 0%; } 100% { width: 0%; margin-right: 0%; } }
+    #authScreen { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .auth-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 28px; padding: 36px 32px; width: 100%; max-width: 400px; box-shadow: 0 32px 80px #00000060, 0 0 0 1px #38bdf808 inset; position: relative; overflow: hidden; }
+    .auth-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.5; }
     .auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
-    .auth-brand-icon {
-      width: 44px; height: 44px;
-      background: linear-gradient(135deg, var(--accent2), var(--purple));
-      border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 8px 24px #0ea5e930;
-    }
+    .auth-brand-icon { width: 44px; height: 44px; background: linear-gradient(135deg, var(--accent2), var(--purple)); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 8px 24px #0ea5e930; }
     .auth-brand-text { font-size: 20px; font-weight: 800; color: var(--text); }
     .auth-brand-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
-
-    .auth-tabs {
-      display: flex;
-      background: var(--bg2);
-      border-radius: 14px;
-      padding: 4px;
-      margin-bottom: 28px;
-      border: 1px solid var(--border);
-    }
-    .auth-tab {
-      flex: 1; padding: 10px 8px;
-      border: none; background: transparent;
-      color: var(--text3);
-      font-family: inherit; font-size: 14px; font-weight: 700;
-      cursor: pointer; border-radius: 10px;
-      transition: all .25s;
-    }
+    .auth-tabs { display: flex; background: var(--bg2); border-radius: 14px; padding: 4px; margin-bottom: 28px; border: 1px solid var(--border); }
+    .auth-tab { flex: 1; padding: 10px 8px; border: none; background: transparent; color: var(--text3); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border-radius: 10px; transition: all .25s; }
     .auth-tab.active { background: var(--surface3); color: var(--text); box-shadow: 0 2px 8px #00000040; }
-
     .field-group { margin-bottom: 18px; }
-    .field-label {
-      display: block; font-size: 12px; font-weight: 700;
-      color: var(--text3); margin-bottom: 8px;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .field-input {
-      width: 100%; padding: 13px 16px;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 13px;
-      font-family: inherit; font-size: 15px;
-      color: var(--text); outline: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
+    .field-label { display: block; font-size: 12px; font-weight: 700; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .field-input { width: 100%; padding: 13px 16px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 13px; font-family: inherit; font-size: 15px; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
     .field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
     .field-input::placeholder { color: var(--text3); }
-
-    .auth-btn {
-      width: 100%; margin-top: 8px; padding: 14px;
-      background: linear-gradient(135deg, var(--accent2), #0284c7);
-      border: none; border-radius: 13px;
-      color: #fff; font-family: inherit;
-      font-size: 15px; font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 24px #0ea5e930;
-      transition: all .2s;
-      position: relative; overflow: hidden;
-    }
+    .auth-btn { width: 100%; margin-top: 8px; padding: 14px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 13px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 24px #0ea5e930; transition: all .2s; position: relative; overflow: hidden; }
     .auth-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #ffffff15 0%, transparent 100%); }
     .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 32px #0ea5e940; }
     .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .auth-error {
-      margin-top: 14px; padding: 12px 16px;
-      border-radius: 12px;
-      background: #fb718512; border: 1px solid #fb718530;
-      color: var(--red); font-size: 13px;
-      display: none;
-    }
-
-    .auth-success {
-      margin-top: 14px; padding: 12px 16px;
-      border-radius: 12px;
-      background: #34d39912; border: 1px solid #34d39930;
-      color: var(--green); font-size: 13px;
-      display: none; line-height: 1.7;
-    }
-
+    .auth-error { margin-top: 14px; padding: 12px 16px; border-radius: 12px; background: #fb718512; border: 1px solid #fb718530; color: var(--red); font-size: 13px; display: none; }
+    .auth-success { margin-top: 14px; padding: 12px 16px; border-radius: 12px; background: #34d39912; border: 1px solid #34d39930; color: var(--green); font-size: 13px; display: none; line-height: 1.7; }
     .verify-screen { text-align: center; padding: 10px 0; }
-    .verify-icon {
-      width: 64px; height: 64px;
-      background: linear-gradient(135deg, #38bdf820, #a78bfa20);
-      border: 1px solid var(--border2);
-      border-radius: 20px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 30px; margin: 0 auto 20px;
-    }
+    .verify-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #38bdf820, #a78bfa20); border: 1px solid var(--border2); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 20px; }
     .verify-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
     .verify-sub { font-size: 13px; color: var(--text3); line-height: 1.8; margin-bottom: 24px; }
-    .verify-email-badge {
-      display: inline-block;
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: 10px; padding: 8px 18px;
-      font-size: 14px; color: var(--accent);
-      margin-bottom: 24px; direction: ltr;
-    }
+    .verify-email-badge { display: inline-block; background: var(--bg2); border: 1px solid var(--border2); border-radius: 10px; padding: 8px 18px; font-size: 14px; color: var(--accent); margin-bottom: 24px; direction: ltr; }
     .verify-actions { display: flex; flex-direction: column; gap: 10px; }
-    .btn-verify-check {
-      width: 100%; padding: 13px;
-      background: linear-gradient(135deg, var(--accent2), #0284c7);
-      border: none; border-radius: 13px;
-      color: #fff; font-family: inherit; font-size: 15px; font-weight: 700;
-      cursor: pointer; transition: all .2s;
-    }
+    .btn-verify-check { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 13px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; }
     .btn-verify-check:hover { transform: translateY(-1px); }
     .btn-verify-check:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .btn-resend {
-      width: 100%; padding: 12px;
-      background: transparent; border: 1px solid var(--border2);
-      border-radius: 13px; color: var(--text2);
-      font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s;
-    }
+    .btn-resend { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--border2); border-radius: 13px; color: var(--text2); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
     .btn-resend:hover { border-color: var(--accent); color: var(--accent); }
     .btn-resend:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-back-login {
-      background: transparent; border: none;
-      color: var(--text3); font-family: inherit; font-size: 13px;
-      cursor: pointer; text-decoration: underline; margin-top: 4px;
-    }
-
+    .btn-back-login { background: transparent; border: none; color: var(--text3); font-family: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 4px; }
     #appScreen { position: relative; z-index: 1; }
-
-    header {
-      background: rgba(8, 11, 18, 0.8);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 100;
-    }
-    .header-inner {
-      max-width: 740px; margin: 0 auto;
-      padding: 0 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 60px;
-    }
-
+    header { background: rgba(8,11,18,0.8); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 740px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
     .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-icon {
-      width: 34px; height: 34px;
-      background: linear-gradient(135deg, var(--accent2), var(--purple));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 17px;
-    }
+    .logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent2), var(--purple)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
     .logo-text { font-size: 17px; font-weight: 800; color: var(--text); }
-
     .header-right { display: flex; align-items: center; gap: 8px; }
-
-    .user-chip {
-      font-size: 11px; color: var(--text3);
-      padding: 5px 12px;
-      background: var(--surface2);
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      max-width: 120px;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent2), #0284c7);
-      color: #fff; border: none;
-      border-radius: 11px;
-      padding: 9px 18px;
-      font-family: inherit; font-size: 13px; font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 16px #0ea5e930;
-      transition: all .2s;
-      white-space: nowrap;
-    }
+    .user-chip { font-size: 11px; color: var(--text3); padding: 5px 12px; background: var(--surface2); border-radius: 20px; border: 1px solid var(--border); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent2), #0284c7); color: #fff; border: none; border-radius: 11px; padding: 9px 18px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px #0ea5e930; transition: all .2s; white-space: nowrap; }
     .btn-primary:hover { transform: translateY(-1px); }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--text3);
-      border: 1px solid var(--border2);
-      border-radius: 11px;
-      padding: 8px 14px;
-      font-family: inherit; font-size: 13px;
-      cursor: pointer;
-      transition: all .2s;
-      white-space: nowrap;
-    }
+    .btn-ghost { background: transparent; color: var(--text3); border: 1px solid var(--border2); border-radius: 11px; padding: 8px 14px; font-family: inherit; font-size: 13px; cursor: pointer; transition: all .2s; white-space: nowrap; }
     .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-
-    .btn-danger-ghost {
-      background: transparent;
-      color: var(--text3);
-      border: 1px solid var(--border2);
-      border-radius: 11px;
-      padding: 8px 14px;
-      font-family: inherit; font-size: 13px;
-      cursor: pointer;
-      transition: all .2s;
-    }
+    .btn-danger-ghost { background: transparent; color: var(--text3); border: 1px solid var(--border2); border-radius: 11px; padding: 8px 14px; font-family: inherit; font-size: 13px; cursor: pointer; transition: all .2s; }
     .btn-danger-ghost:hover { border-color: var(--red); color: var(--red); }
-
     .container { max-width: 740px; margin: 0 auto; padding: 24px 16px; }
-
     .search-wrap { position: relative; margin-bottom: 16px; }
-    .search-icon {
-      position: absolute; top: 50%; right: 16px;
-      transform: translateY(-50%);
-      color: var(--text3); font-size: 16px;
-      pointer-events: none;
-    }
-    .search-input {
-      width: 100%; padding: 13px 44px 13px 18px;
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 15px;
-      font-family: inherit; font-size: 15px;
-      color: var(--text); outline: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
+    .search-icon { position: absolute; top: 50%; right: 16px; transform: translateY(-50%); color: var(--text3); font-size: 16px; pointer-events: none; }
+    .search-input { width: 100%; padding: 13px 44px 13px 18px; background: var(--surface); border: 1px solid var(--border2); border-radius: 15px; font-family: inherit; font-size: 15px; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
     .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
     .search-input::placeholder { color: var(--text3); }
-
     .pills { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
-    .pill {
-      padding: 6px 16px;
-      border-radius: 20px;
-      border: 1px solid var(--border2);
-      background: transparent;
-      color: var(--text3);
-      font-family: inherit; font-size: 13px; font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
-    }
+    .pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text3); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
     .pill:hover { border-color: var(--accent); color: var(--accent); }
     .pill.active { background: var(--glow); border-color: var(--accent); color: var(--accent); }
-
     .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px; }
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px 10px;
-      text-align: center;
-      transition: border-color .2s;
-    }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 10px; text-align: center; transition: border-color .2s; }
     .stat-card:hover { border-color: var(--border2); }
     .stat-num { display: block; font-size: 26px; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 5px; }
     .stat-label { font-size: 11px; color: var(--text3); }
-
     .grid { display: flex; flex-direction: column; gap: 10px; }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
-      cursor: pointer;
-      transition: all .25s;
-      position: relative; overflow: hidden;
-    }
-    .card-accent-line {
-      position: absolute; top: 0; right: 0;
-      width: 3px; height: 100%;
-      border-radius: 0 20px 20px 0;
-    }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; cursor: pointer; transition: all .25s; position: relative; overflow: hidden; }
+    .card-accent-line { position: absolute; top: 0; right: 0; width: 3px; height: 100%; border-radius: 0 20px 20px 0; }
     .card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 12px 40px #00000040; }
-
     .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
     .date-text { font-size: 11px; color: var(--text3); margin-right: auto; }
@@ -368,52 +120,25 @@
     .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 10px; }
     .word-count { font-size: 11px; color: var(--text3); }
     .card-arrow { color: var(--text3); font-size: 14px; }
-
     .empty { text-align: center; padding: 80px 20px; }
     .empty-icon { width: 70px; height: 70px; background: var(--surface2); border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
     .empty-title { font-size: 18px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
     .empty-sub { font-size: 14px; color: var(--text3); margin-bottom: 24px; }
-
-    .form-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 24px;
-      padding: 28px;
-      box-shadow: 0 8px 48px #00000050;
-      position: relative; overflow: hidden;
-    }
-    .form-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0.3;
-    }
-
+    .form-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 24px; padding: 28px; box-shadow: 0 8px 48px #00000050; position: relative; overflow: hidden; }
+    .form-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.3; }
     .form-header { margin-bottom: 24px; }
     .form-title { font-size: 22px; font-weight: 900; color: var(--text); }
     .form-subtitle { font-size: 13px; color: var(--text3); margin-top: 4px; }
-
     .form-field { margin-bottom: 18px; }
     .form-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
     .form-label-dot { width: 7px; height: 7px; border-radius: 50%; }
-
-    .form-input, .form-select, .form-textarea {
-      width: 100%; padding: 12px 16px;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 13px;
-      font-family: inherit; font-size: 15px;
-      color: var(--text); outline: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 13px; font-family: inherit; font-size: 15px; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
     .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
     .form-input::placeholder, .form-textarea::placeholder { color: var(--text3); }
     .form-select option { background: var(--surface2); }
     .form-textarea { resize: none; line-height: 1.8; min-height: 85px; overflow: hidden; }
-
     .row2 { display: flex; gap: 12px; }
     .row2 > div { flex: 1; }
-
     .script-section { border-radius: 16px; border: 1px solid var(--border2); overflow: hidden; margin-bottom: 12px; }
     .section-header { display: flex; align-items: center; gap: 10px; padding: 11px 16px; background: var(--surface2); border-bottom: 1px solid var(--border); }
     .section-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -421,61 +146,49 @@
     .section-header-tag { font-size: 10px; color: var(--text3); background: var(--bg2); padding: 2px 9px; border-radius: 10px; }
     .section-textarea { width: 100%; padding: 14px 16px; background: var(--bg2); border: none; font-family: inherit; font-size: 14px; color: var(--text2); outline: none; resize: none; line-height: 1.8; min-height: 75px; overflow: hidden; }
     .section-textarea::placeholder { color: var(--text3); }
-
     .form-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; flex-wrap: wrap; }
     .btn-cancel { padding: 12px 22px; background: transparent; border: 1px solid var(--border2); border-radius: 12px; color: var(--text2); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
     .btn-cancel:hover { border-color: var(--text3); }
     .btn-save { padding: 12px 28px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 12px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px #0ea5e930; transition: all .2s; }
     .btn-save:hover { transform: translateY(-1px); }
     .btn-save:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
     .detail-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 24px; overflow: hidden; box-shadow: 0 8px 48px #00000050; }
     .detail-hero { padding: 28px; border-bottom: 1px solid var(--border); position: relative; }
     .detail-hero-bg { position: absolute; inset: 0; opacity: 0.04; background: radial-gradient(ellipse at top right, var(--accent), transparent 60%); }
     .detail-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .detail-date { font-size: 12px; color: var(--text3); margin-right: auto; }
     .detail-title { font-size: 24px; font-weight: 900; color: var(--text); line-height: 1.4; position: relative; }
-
     .detail-body { padding: 24px; }
     .detail-section { margin-bottom: 14px; }
     .detail-section-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
     .detail-section-dot { width: 8px; height: 8px; border-radius: 50%; }
     .detail-section-label { font-size: 12px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
     .detail-section-body { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; font-size: 15px; line-height: 1.9; color: var(--text2); white-space: pre-wrap; }
-
     .detail-actions { display: flex; gap: 10px; padding: 20px 24px; border-top: 1px solid var(--border); background: var(--bg2); }
     .btn-delete { padding: 12px 20px; background: transparent; border: 1px solid #fb718530; border-radius: 12px; color: var(--red); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
     .btn-delete:hover { background: #fb718512; }
     .btn-edit { flex: 1; padding: 12px 26px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 12px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px #0ea5e930; transition: all .2s; }
     .btn-edit:hover { transform: translateY(-1px); }
 
-    .toast {
-      position: fixed;
-      bottom: 32px; left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--surface3);
-      border: 1px solid var(--border2);
-      border-radius: 16px;
-      padding: 13px 28px;
-      font-size: 14px; font-weight: 600;
-      color: var(--text);
-      z-index: 999;
-      box-shadow: 0 12px 40px #00000060;
-      opacity: 0; pointer-events: none;
-      transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
-      white-space: nowrap;
-    }
-    .toast.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+    /* ✅ إصلاح: Modal للحذف بدل confirm() */
+    .modal-overlay { position: fixed; inset: 0; background: #00000080; backdrop-filter: blur(4px); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .modal-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 28px; max-width: 360px; width: 100%; box-shadow: 0 24px 60px #00000080; }
+    .modal-icon { font-size: 36px; text-align: center; margin-bottom: 14px; }
+    .modal-title { font-size: 18px; font-weight: 800; color: var(--text); text-align: center; margin-bottom: 8px; }
+    .modal-sub { font-size: 13px; color: var(--text3); text-align: center; margin-bottom: 22px; line-height: 1.7; }
+    .modal-btns { display: flex; gap: 10px; }
+    .modal-cancel { flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border2); border-radius: 12px; color: var(--text2); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
+    .modal-cancel:hover { border-color: var(--text3); }
+    .modal-confirm { flex: 1; padding: 12px; background: #fb718520; border: 1px solid #fb718540; border-radius: 12px; color: var(--red); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
+    .modal-confirm:hover { background: #fb718530; }
 
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface3); border: 1px solid var(--border2); border-radius: 16px; padding: 13px 28px; font-size: 14px; font-weight: 600; color: var(--text); z-index: 999; box-shadow: 0 12px 40px #00000060; opacity: 0; pointer-events: none; transition: all .3s cubic-bezier(.34, 1.56, .64, 1); white-space: nowrap; }
+    .toast.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
     .hidden { display: none !important; }
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-    @media (max-width: 480px) {
-      .stats-grid { grid-template-columns: repeat(3, 1fr); }
-      .detail-title { font-size: 20px; }
-    }
+    @media (max-width: 480px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } .detail-title { font-size: 20px; } }
   </style>
 </head>
 <body>
@@ -483,8 +196,20 @@
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
-
 <div class="toast" id="toast"></div>
+
+<!-- ✅ إصلاح: Modal حذف آمن بدل confirm() -->
+<div class="modal-overlay hidden" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">حذف السكربت</div>
+    <div class="modal-sub">هل أنت متأكد من حذف هذا السكربت؟<br>هذا الإجراء لا يمكن التراجع عنه.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="modalCancelBtn">إلغاء</button>
+      <button class="modal-confirm" id="modalConfirmBtn">نعم، احذف</button>
+    </div>
+  </div>
+</div>
 
 <div id="loadingScreen" class="loading-screen">
   <div class="loading-logo">سكربتاتي ✦</div>
@@ -500,38 +225,34 @@
         <div class="auth-brand-sub">مكتبة السكربتات الذكية</div>
       </div>
     </div>
-
     <div id="authTabs">
       <div class="auth-tabs">
         <button class="auth-tab active" onclick="switchTab('login')" id="tabLogin">دخول</button>
         <button class="auth-tab" onclick="switchTab('register')" id="tabRegister">حساب جديد</button>
       </div>
     </div>
-
     <div id="loginForm">
       <div class="field-group">
         <label class="field-label">الإيميل</label>
-        <input class="field-input" type="email" id="loginEmail" placeholder="example@email.com" dir="ltr" />
+        <input class="field-input" type="email" id="loginEmail" placeholder="example@email.com" dir="ltr" maxlength="254" />
       </div>
       <div class="field-group">
         <label class="field-label">كلمة المرور</label>
-        <input class="field-input" type="password" id="loginPass" placeholder="••••••••" dir="ltr" />
+        <input class="field-input" type="password" id="loginPass" placeholder="••••••••" dir="ltr" maxlength="128" />
       </div>
       <button class="auth-btn" onclick="doLogin()" id="loginBtn">دخول</button>
     </div>
-
     <div id="registerForm" class="hidden">
       <div class="field-group">
         <label class="field-label">الإيميل</label>
-        <input class="field-input" type="email" id="regEmail" placeholder="example@email.com" dir="ltr" />
+        <input class="field-input" type="email" id="regEmail" placeholder="example@email.com" dir="ltr" maxlength="254" />
       </div>
       <div class="field-group">
         <label class="field-label">كلمة المرور</label>
-        <input class="field-input" type="password" id="regPass" placeholder="6 أحرف على الأقل" dir="ltr" />
+        <input class="field-input" type="password" id="regPass" placeholder="6 أحرف على الأقل" dir="ltr" maxlength="128" />
       </div>
       <button class="auth-btn" onclick="doRegister()" id="regBtn">إنشاء حساب</button>
     </div>
-
     <div id="verifyScreen" class="hidden">
       <div class="verify-screen">
         <div class="verify-icon">📧</div>
@@ -546,7 +267,6 @@
         </div>
       </div>
     </div>
-
     <div class="auth-error" id="authError"></div>
     <div class="auth-success" id="authSuccess"></div>
   </div>
@@ -567,18 +287,16 @@
       </div>
     </div>
   </header>
-
   <div class="container">
     <div id="listView">
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input class="search-input" id="searchInput" placeholder="ابحث في السكربتات..." oninput="renderList()" />
+        <input class="search-input" id="searchInput" placeholder="ابحث في السكربتات..." oninput="renderList()" maxlength="100" />
       </div>
       <div class="pills" id="pills"></div>
       <div class="stats-grid" id="statsRow"></div>
       <div class="grid" id="grid"></div>
     </div>
-
     <div id="formView" class="hidden">
       <div class="form-card">
         <div class="form-header">
@@ -586,31 +304,20 @@
           <div class="form-subtitle">اكتب سكربتك بالتفصيل لأفضل نتيجة</div>
         </div>
         <div class="form-field">
-          <label class="form-label">
-            <span class="form-label-dot" style="background:var(--accent)"></span>
-            عنوان السكربت
-          </label>
-          <input class="form-input" type="text" id="fTitle" placeholder="موضوع الفيديو..." />
+          <label class="form-label"><span class="form-label-dot" style="background:var(--accent)"></span>عنوان السكربت</label>
+          <input class="form-input" type="text" id="fTitle" placeholder="موضوع الفيديو..." maxlength="200" />
         </div>
         <div class="row2">
           <div class="form-field">
-            <label class="form-label">
-              <span class="form-label-dot" style="background:var(--yellow)"></span>
-              المنصة
-            </label>
+            <label class="form-label"><span class="form-label-dot" style="background:var(--yellow)"></span>المنصة</label>
             <select class="form-select" id="fPlatform">
-              <option>شورتس</option><option>ريلز</option>
-              <option>تيك توك</option><option>يوتيوب</option>
+              <option>شورتس</option><option>ريلز</option><option>تيك توك</option><option>يوتيوب</option>
             </select>
           </div>
           <div class="form-field">
-            <label class="form-label">
-              <span class="form-label-dot" style="background:var(--purple)"></span>
-              التصنيف
-            </label>
+            <label class="form-label"><span class="form-label-dot" style="background:var(--purple)"></span>التصنيف</label>
             <select class="form-select" id="fCategory">
-              <option>تقني</option><option>تعليمي</option>
-              <option>ترفيهي</option><option>نصائح</option>
+              <option>تقني</option><option>تعليمي</option><option>ترفيهي</option><option>نصائح</option>
             </select>
           </div>
         </div>
@@ -620,7 +327,7 @@
             <span class="section-header-label" style="color:#fb7185">Hook — الخطاف</span>
             <span class="section-header-tag">0-3 ثواني</span>
           </div>
-          <textarea class="section-textarea" id="fHook" placeholder="الجملة الأولى اللي تجذب المشاهد..."></textarea>
+          <textarea class="section-textarea" id="fHook" placeholder="الجملة الأولى اللي تجذب المشاهد..." maxlength="2000"></textarea>
         </div>
         <div class="script-section">
           <div class="section-header">
@@ -628,7 +335,7 @@
             <span class="section-header-label" style="color:#38bdf8">Value — المحتوى</span>
             <span class="section-header-tag">الجوهر</span>
           </div>
-          <textarea class="section-textarea" id="fValue" placeholder="الخطوات أو المعلومات..."></textarea>
+          <textarea class="section-textarea" id="fValue" placeholder="الخطوات أو المعلومات..." maxlength="5000"></textarea>
         </div>
         <div class="script-section">
           <div class="section-header">
@@ -636,7 +343,7 @@
             <span class="section-header-label" style="color:#34d399">Result — النتيجة</span>
             <span class="section-header-tag">الفائدة</span>
           </div>
-          <textarea class="section-textarea" id="fResult" placeholder="شو بيصير بعد ما يطبق الشخص؟"></textarea>
+          <textarea class="section-textarea" id="fResult" placeholder="شو بيصير بعد ما يطبق الشخص؟" maxlength="2000"></textarea>
         </div>
         <div class="script-section">
           <div class="section-header">
@@ -644,7 +351,7 @@
             <span class="section-header-label" style="color:#a78bfa">CTA — الدعوة للتفاعل</span>
             <span class="section-header-tag">الختام</span>
           </div>
-          <textarea class="section-textarea" id="fCta" placeholder="احفظ، شير، كومنت..."></textarea>
+          <textarea class="section-textarea" id="fCta" placeholder="احفظ، شير، كومنت..." maxlength="500"></textarea>
         </div>
         <div class="form-actions">
           <button class="btn-cancel" onclick="showView('list')">إلغاء</button>
@@ -652,7 +359,6 @@
         </div>
       </div>
     </div>
-
     <div id="detailView" class="hidden">
       <div class="detail-card">
         <div class="detail-hero">
@@ -674,8 +380,7 @@
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     sendEmailVerification,
-    reload,
-    signOut
+    reload, signOut
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
     getFirestore, collection, doc,
@@ -688,43 +393,90 @@
     projectId: "scriptati-d503f",
     storageBucket: "scriptati-d503f.firebasestorage.app",
     messagingSenderId: "1051271258822",
-    appId: "1:1051271258822:web:7b97d7dd1cded42d46edc7",
-    measurementId: "G-V9N8J1D8Y9"
+    appId: "1:1051271258822:web:7b97d7dd1cded42d46edc7"
   };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  const PLATFORM_COLORS = {
-    "شورتس": { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
-    "ريلز":  { bg: "#f472b620", text: "#f472b6", border: "#f472b640" },
-    "تيك توك": { bg: "#94a3b820", text: "#94a3b8", border: "#94a3b840" },
-    "يوتيوب": { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
-  };
+  // ============================================================
+  // ✅ إصلاح XSS 1: دالة تنظيف HTML — تمنع حقن الكود الخبيث
+  // ============================================================
+  function escapeHTML(str) {
+    if (!str) return '';
+    const d = document.createElement('div');
+    d.textContent = String(str);
+    return d.innerHTML;
+  }
 
+  // ============================================================
+  // ✅ إصلاح XSS 2: تنظيف المدخلات قبل الحفظ
+  // ============================================================
+  function sanitizeInput(str, maxLen = 5000) {
+    if (!str) return '';
+    // إزالة null bytes والتحكم في الطول
+    return String(str).replace(/\0/g, '').trim().slice(0, maxLen);
+  }
+
+  // ============================================================
+  // ✅ إصلاح: التحقق من القيم المسموح بها للـ select
+  // ============================================================
+  const ALLOWED_PLATFORMS = ["شورتس", "ريلز", "تيك توك", "يوتيوب"];
+  const ALLOWED_CATEGORIES = ["تقني", "تعليمي", "ترفيهي", "نصائح"];
+
+  function validateSelect(value, allowed, fallback) {
+    return allowed.includes(value) ? value : fallback;
+  }
+
+  const PLATFORM_COLORS = {
+    "شورتس":   { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
+    "ريلز":    { bg: "#f472b620", text: "#f472b6", border: "#f472b640" },
+    "تيك توك": { bg: "#94a3b820", text: "#94a3b8", border: "#94a3b840" },
+    "يوتيوب":  { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
+  };
   const CAT_COLORS = {
-    "تقني": { bg: "#38bdf820", text: "#38bdf8", border: "#38bdf840" },
-    "تعليمي": { bg: "#34d39920", text: "#34d399", border: "#34d39940" },
-    "ترفيهي": { bg: "#fbbf2420", text: "#fbbf24", border: "#fbbf2440" },
-    "نصائح": { bg: "#a78bfa20", text: "#a78bfa", border: "#a78bfa40" },
+    "تقني":    { bg: "#38bdf820", text: "#38bdf8", border: "#38bdf840" },
+    "تعليمي":  { bg: "#34d39920", text: "#34d399", border: "#34d39940" },
+    "ترفيهي":  { bg: "#fbbf2420", text: "#fbbf24", border: "#fbbf2440" },
+    "نصائح":   { bg: "#a78bfa20", text: "#a78bfa", border: "#a78bfa40" },
   };
 
   let scripts = [], filterPlatform = "الكل", currentScript = null, editingId = null, currentUser = null;
   let pendingVerifyUser = null;
 
+  // ============================================================
+  // ✅ إصلاح: Modal حذف آمن بدل confirm()
+  // ============================================================
+  function showDeleteModal(onConfirm) {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('hidden');
+    const confirmBtn = document.getElementById('modalConfirmBtn');
+    const cancelBtn = document.getElementById('modalCancelBtn');
+    const close = () => modal.classList.add('hidden');
+    const newConfirm = confirmBtn.cloneNode(true);
+    const newCancel = cancelBtn.cloneNode(true);
+    confirmBtn.replaceWith(newConfirm);
+    cancelBtn.replaceWith(newCancel);
+    newConfirm.addEventListener('click', () => { close(); onConfirm(); });
+    newCancel.addEventListener('click', close);
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); }, { once: true });
+  }
+
   function showAuthError(msg) {
     const el = document.getElementById("authError");
-    const ok = document.getElementById("authSuccess");
-    el.textContent = msg; el.style.display = "block";
-    ok.style.display = "none";
+    // ✅ textContent بدل innerHTML — آمن من XSS
+    el.textContent = msg;
+    el.style.display = "block";
+    document.getElementById("authSuccess").style.display = "none";
   }
 
   function showAuthSuccess(msg) {
     const el = document.getElementById("authSuccess");
-    const err = document.getElementById("authError");
-    el.textContent = msg; el.style.display = "block";
-    err.style.display = "none";
+    // ✅ textContent بدل innerHTML
+    el.textContent = msg;
+    el.style.display = "block";
+    document.getElementById("authError").style.display = "none";
   }
 
   function hideAuthMessages() {
@@ -738,6 +490,7 @@
     document.getElementById("registerForm").classList.add("hidden");
     document.getElementById("authTabs").classList.add("hidden");
     document.getElementById("verifyScreen").classList.remove("hidden");
+    // ✅ textContent بدل innerHTML للإيميل
     document.getElementById("verifyEmailBadge").textContent = user.email;
     hideAuthMessages();
   }
@@ -788,7 +541,7 @@
   };
 
   window.doLogin = async () => {
-    const email = document.getElementById("loginEmail").value.trim();
+    const email = sanitizeInput(document.getElementById("loginEmail").value.trim(), 254);
     const pass = document.getElementById("loginPass").value;
     const btn = document.getElementById("loginBtn");
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
@@ -802,16 +555,16 @@
   };
 
   window.doRegister = async () => {
-    const email = document.getElementById("regEmail").value.trim();
+    const email = sanitizeInput(document.getElementById("regEmail").value.trim(), 254);
     const pass = document.getElementById("regPass").value;
     const btn = document.getElementById("regBtn");
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
     if (pass.length < 6) return showAuthError("كلمة المرور لازم تكون 6 أحرف أو أكثر");
     btn.disabled = true; btn.textContent = "جاري الإنشاء...";
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-      await sendEmailVerification(userCredential.user);
-      showVerifyScreen(userCredential.user);
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await sendEmailVerification(cred.user);
+      showVerifyScreen(cred.user);
     } catch (e) {
       let msg = "حدث خطأ، حاول مرة ثانية";
       if (e.code === "auth/email-already-in-use") msg = "هذا الإيميل مسجل مسبقاً";
@@ -825,12 +578,11 @@
 
   onAuthStateChanged(auth, (user) => {
     document.getElementById("loadingScreen").classList.add("hidden");
-
     if (user) {
       if (!user.emailVerified && pendingVerifyUser) return;
       if (user.emailVerified && pendingVerifyUser) pendingVerifyUser = null;
-
       currentUser = user;
+      // ✅ textContent للإيميل — آمن
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("appScreen").classList.remove("hidden");
@@ -901,7 +653,9 @@
 
   window.showToast = (msg) => {
     const t = document.getElementById("toast");
-    t.textContent = msg; t.classList.add("show");
+    // ✅ textContent بدل innerHTML للـ toast
+    t.textContent = msg;
+    t.classList.add("show");
     setTimeout(() => t.classList.remove("show"), 2600);
   };
 
@@ -916,7 +670,7 @@
 
   window.renderList = () => {
     renderPills(); renderStats();
-    const search = document.getElementById("searchInput").value.toLowerCase();
+    const search = sanitizeInput(document.getElementById("searchInput").value, 100).toLowerCase();
     const filtered = scripts.filter(s => {
       const ok = !search || (s.title||"").toLowerCase().includes(search) || (s.hook||"").toLowerCase().includes(search);
       return ok && (filterPlatform === "الكل" || s.platform === filterPlatform);
@@ -924,6 +678,7 @@
 
     const grid = document.getElementById("grid");
     if (filtered.length === 0) {
+      // ✅ هنا نستخدم innerHTML بس للـ template الثابت — بدون بيانات المستخدم
       grid.innerHTML = `
         <div class="empty">
           <div class="empty-icon">${scripts.length === 0 ? "✍️" : "🔍"}</div>
@@ -934,39 +689,63 @@
       return;
     }
 
+    // ============================================================
+    // ✅ إصلاح XSS الرئيسي: escapeHTML على كل بيانات المستخدم
+    // ============================================================
     grid.innerHTML = filtered.map(s => {
       const pc = PLATFORM_COLORS[s.platform] || PLATFORM_COLORS["شورتس"];
       const cc = CAT_COLORS[s.category] || CAT_COLORS["تقني"];
       const total = wordCount(`${s.hook||""} ${s.value||""} ${s.result||""} ${s.cta||""}`);
+      const safeTitle = escapeHTML(s.title);
+      const safeHook = escapeHTML(s.hook);
+      const safeId = escapeHTML(s.firestoreId);
+      const safePlatform = escapeHTML(s.platform);
+      const safeCategory = escapeHTML(s.category);
+      const safeDate = escapeHTML(s.date);
+      const hookPreview = safeHook.length > 90 ? safeHook.slice(0, 90) + "..." : safeHook;
+
       return `
-        <div class="card" onclick="openDetail('${s.firestoreId}')">
+        <div class="card" data-id="${safeId}">
           <div class="card-accent-line" style="background:${pc.text}"></div>
           <div class="card-top">
-            <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${s.platform}</span>
-            <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border}">${s.category}</span>
-            <span class="date-text">${s.date}</span>
+            <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${safePlatform}</span>
+            <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border}">${safeCategory}</span>
+            <span class="date-text">${safeDate}</span>
           </div>
-          <div class="card-title">${s.title}</div>
-          ${s.hook ? `<div class="card-hook">${s.hook.slice(0,90)}${s.hook.length>90?"...":""}</div>` : ""}
+          <div class="card-title">${safeTitle}</div>
+          ${safeHook ? `<div class="card-hook">${hookPreview}</div>` : ""}
           <div class="card-footer">
             <span class="word-count">${total} كلمة</span>
             <span class="card-arrow">←</span>
           </div>
         </div>`;
     }).join("");
+
+    // ✅ addEventListener بدل onclick inline — يمنع XSS عبر الـ attributes
+    grid.querySelectorAll(".card[data-id]").forEach(card => {
+      card.addEventListener("click", () => openDetail(card.dataset.id));
+    });
   };
 
   function renderPills() {
     const pills = ["الكل","شورتس","ريلز","تيك توك","يوتيوب"];
+    // ✅ هذه قيم ثابتة من الكود — ليست من المستخدم — آمنة
     document.getElementById("pills").innerHTML = pills.map(p =>
-      `<button class="pill ${filterPlatform===p?'active':''}" onclick="setFilter('${p}')">${p}</button>`
+      `<button class="pill ${filterPlatform===p?'active':''}" data-filter="${escapeHTML(p)}">${escapeHTML(p)}</button>`
     ).join("");
+    document.getElementById("pills").querySelectorAll(".pill").forEach(btn => {
+      btn.addEventListener("click", () => setFilter(btn.dataset.filter));
+    });
   }
 
-  window.setFilter = (p) => { filterPlatform = p; renderList(); };
+  window.setFilter = (p) => {
+    if (!["الكل","شورتس","ريلز","تيك توك","يوتيوب"].includes(p)) return;
+    filterPlatform = p; renderList();
+  };
 
   function renderStats() {
     const platforms = ["شورتس","ريلز","تيك توك","يوتيوب"];
+    // ✅ القيم هنا أرقام وقيم ثابتة — آمنة
     document.getElementById("statsRow").innerHTML = `
       <div class="stat-card">
         <span class="stat-num">${scripts.length}</span>
@@ -975,7 +754,7 @@
       ${platforms.map(p => `
         <div class="stat-card">
           <span class="stat-num">${scripts.filter(s=>s.platform===p).length}</span>
-          <span class="stat-label">${p}</span>
+          <span class="stat-label">${escapeHTML(p)}</span>
         </div>`).join("")}`;
   }
 
@@ -985,10 +764,11 @@
 
   function openForm(script) {
     editingId = script ? script.firestoreId : null;
+    // ✅ textContent بدل innerHTML للعنوان
     document.getElementById("formTitle").textContent = script ? "تعديل السكربت" : "سكربت جديد";
     document.getElementById("fTitle").value = script?.title || "";
-    document.getElementById("fPlatform").value = script?.platform || "شورتس";
-    document.getElementById("fCategory").value = script?.category || "تقني";
+    document.getElementById("fPlatform").value = validateSelect(script?.platform, ALLOWED_PLATFORMS, "شورتس");
+    document.getElementById("fCategory").value = validateSelect(script?.category, ALLOWED_CATEGORIES, "تقني");
     document.getElementById("fHook").value = script?.hook || "";
     document.getElementById("fValue").value = script?.value || "";
     document.getElementById("fResult").value = script?.result || "";
@@ -998,22 +778,26 @@
   window.openForm = openForm;
 
   window.saveScript = async () => {
-    const title = document.getElementById("fTitle").value.trim();
+    // ✅ sanitizeInput على كل المدخلات قبل الحفظ
+    const title = sanitizeInput(document.getElementById("fTitle").value.trim(), 200);
     if (!title) return showToast("⚠️ أضف عنوان للسكربت");
     const btn = document.getElementById("saveBtn");
     btn.disabled = true; btn.textContent = "جاري الحفظ...";
 
+    const platform = validateSelect(document.getElementById("fPlatform").value, ALLOWED_PLATFORMS, "شورتس");
+    const category = validateSelect(document.getElementById("fCategory").value, ALLOWED_CATEGORIES, "تقني");
+
     const script = {
       title,
-      platform: document.getElementById("fPlatform").value,
-      category: document.getElementById("fCategory").value,
-      hook: document.getElementById("fHook").value,
-      value: document.getElementById("fValue").value,
-      result: document.getElementById("fResult").value,
-      cta: document.getElementById("fCta").value,
+      platform,
+      category,
+      hook:   sanitizeInput(document.getElementById("fHook").value,   2000),
+      value:  sanitizeInput(document.getElementById("fValue").value,  5000),
+      result: sanitizeInput(document.getElementById("fResult").value, 2000),
+      cta:    sanitizeInput(document.getElementById("fCta").value,    500),
       date: new Date().toLocaleDateString("ar-IQ"),
       uid: currentUser.uid,
-      id: editingId ? (scripts.find(s=>s.firestoreId===editingId)?.id||Date.now()) : Date.now(),
+      id: editingId ? (scripts.find(s=>s.firestoreId===editingId)?.id || Date.now()) : Date.now(),
     };
     if (editingId) script.firestoreId = editingId;
 
@@ -1039,11 +823,14 @@
     const pc = PLATFORM_COLORS[script.platform] || PLATFORM_COLORS["شورتس"];
     const cc = CAT_COLORS[script.category] || CAT_COLORS["تقني"];
 
-    document.getElementById("dBadges").innerHTML = `
-      <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${script.platform}</span>
-      <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border};margin-right:6px">${script.category}</span>
-      <span class="detail-date">${script.date}</span>`;
+    // ✅ escapeHTML على كل قيم المستخدم في dBadges
+    const dBadges = document.getElementById("dBadges");
+    dBadges.innerHTML = `
+      <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${escapeHTML(script.platform)}</span>
+      <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border};margin-right:6px">${escapeHTML(script.category)}</span>
+      <span class="detail-date">${escapeHTML(script.date)}</span>`;
 
+    // ✅ textContent للعنوان — أكثر أماناً
     document.getElementById("dTitle").textContent = script.title;
 
     const sections = [
@@ -1053,6 +840,7 @@
       { key:"cta",    label:"CTA — الدعوة",     color:"#a78bfa" },
     ];
 
+    // ✅ escapeHTML على محتوى السكربت
     document.getElementById("dSections").innerHTML = sections
       .filter(s => script[s.key])
       .map(s => `
@@ -1061,7 +849,7 @@
             <div class="detail-section-dot" style="background:${s.color}"></div>
             <span class="detail-section-label">${s.label}</span>
           </div>
-          <div class="detail-section-body">${script[s.key]}</div>
+          <div class="detail-section-body">${escapeHTML(script[s.key])}</div>
         </div>`).join("");
 
     const actionsDiv = document.getElementById("detailActions");
@@ -1069,14 +857,18 @@
       <button class="btn-delete" id="btnDelete">حذف</button>
       <button class="btn-edit" id="btnEdit">تعديل السكربت</button>`;
 
+    // ✅ addEventListener بدل onclick inline
     document.getElementById("btnEdit").addEventListener("click", () => openForm(currentScript));
-    document.getElementById("btnDelete").addEventListener("click", () => deleteCurrentScript());
+    document.getElementById("btnDelete").addEventListener("click", () => {
+      // ✅ Modal آمن بدل confirm()
+      showDeleteModal(() => deleteCurrentScript());
+    });
 
     showView("detail");
   };
 
   async function deleteCurrentScript() {
-    if (!currentScript || !confirm("متأكد من حذف هذا السكربت؟")) return;
+    if (!currentScript) return;
     await deleteFromFirestore(currentScript.firestoreId);
     scripts = scripts.filter(s => s.firestoreId !== currentScript.firestoreId);
     showToast("🗑️ تم الحذف");
