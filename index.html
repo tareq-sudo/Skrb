@@ -168,6 +168,56 @@
       display: none;
     }
 
+    .auth-success {
+      margin-top: 14px; padding: 12px 16px;
+      border-radius: 12px;
+      background: #34d39912; border: 1px solid #34d39930;
+      color: var(--green); font-size: 13px;
+      display: none; line-height: 1.7;
+    }
+
+    .verify-screen { text-align: center; padding: 10px 0; }
+    .verify-icon {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, #38bdf820, #a78bfa20);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; margin: 0 auto 20px;
+    }
+    .verify-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    .verify-sub { font-size: 13px; color: var(--text3); line-height: 1.8; margin-bottom: 24px; }
+    .verify-email-badge {
+      display: inline-block;
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 8px 18px;
+      font-size: 14px; color: var(--accent);
+      margin-bottom: 24px; direction: ltr;
+    }
+    .verify-actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-verify-check {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--accent2), #0284c7);
+      border: none; border-radius: 13px;
+      color: #fff; font-family: inherit; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-verify-check:hover { transform: translateY(-1px); }
+    .btn-verify-check:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-resend {
+      width: 100%; padding: 12px;
+      background: transparent; border: 1px solid var(--border2);
+      border-radius: 13px; color: var(--text2);
+      font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s;
+    }
+    .btn-resend:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-resend:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-back-login {
+      background: transparent; border: none;
+      color: var(--text3); font-family: inherit; font-size: 13px;
+      cursor: pointer; text-decoration: underline; margin-top: 4px;
+    }
+
     #appScreen { position: relative; z-index: 1; }
 
     header {
@@ -450,10 +500,14 @@
         <div class="auth-brand-sub">مكتبة السكربتات الذكية</div>
       </div>
     </div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')" id="tabLogin">دخول</button>
-      <button class="auth-tab" onclick="switchTab('register')" id="tabRegister">حساب جديد</button>
+
+    <div id="authTabs">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')" id="tabLogin">دخول</button>
+        <button class="auth-tab" onclick="switchTab('register')" id="tabRegister">حساب جديد</button>
+      </div>
     </div>
+
     <div id="loginForm">
       <div class="field-group">
         <label class="field-label">الإيميل</label>
@@ -465,6 +519,7 @@
       </div>
       <button class="auth-btn" onclick="doLogin()" id="loginBtn">دخول</button>
     </div>
+
     <div id="registerForm" class="hidden">
       <div class="field-group">
         <label class="field-label">الإيميل</label>
@@ -476,7 +531,24 @@
       </div>
       <button class="auth-btn" onclick="doRegister()" id="regBtn">إنشاء حساب</button>
     </div>
+
+    <div id="verifyScreen" class="hidden">
+      <div class="verify-screen">
+        <div class="verify-icon">📧</div>
+        <div class="verify-title">تحقق من إيميلك</div>
+        <div class="verify-sub">أرسلنا لك رسالة تحقق على</div>
+        <div class="verify-email-badge" id="verifyEmailBadge"></div>
+        <div class="verify-sub">افتح الإيميل واضغط على رابط التفعيل،<br>ثم ارجع هنا وضغط "تم التحقق"</div>
+        <div class="verify-actions">
+          <button class="btn-verify-check" onclick="checkVerification()" id="checkVerifyBtn">✅ تم التحقق، دخّلني</button>
+          <button class="btn-resend" onclick="resendVerification()" id="resendBtn">إعادة إرسال الرسالة</button>
+          <button class="btn-back-login" onclick="backToLogin()">← رجوع لتسجيل الدخول</button>
+        </div>
+      </div>
+    </div>
+
     <div class="auth-error" id="authError"></div>
+    <div class="auth-success" id="authSuccess"></div>
   </div>
 </div>
 
@@ -600,7 +672,10 @@
   import {
     getAuth, onAuthStateChanged,
     createUserWithEmailAndPassword,
-    signInWithEmailAndPassword, signOut
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    reload,
+    signOut
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
     getFirestore, collection, doc,
@@ -636,55 +711,80 @@
   };
 
   let scripts = [], filterPlatform = "الكل", currentScript = null, editingId = null, currentUser = null;
+  let pendingVerifyUser = null;
 
-  // ===== التعديل الرئيسي هنا =====
-  window.showView = (view) => {
-    ["listView","formView","detailView"].forEach(v =>
-      document.getElementById(v).classList.toggle("hidden", v !== view + "View")
-    );
+  function showAuthError(msg) {
+    const el = document.getElementById("authError");
+    const ok = document.getElementById("authSuccess");
+    el.textContent = msg; el.style.display = "block";
+    ok.style.display = "none";
+  }
 
-    const newBtn = document.getElementById("newBtn");
-    const backBtn = document.getElementById("backBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
+  function showAuthSuccess(msg) {
+    const el = document.getElementById("authSuccess");
+    const err = document.getElementById("authError");
+    el.textContent = msg; el.style.display = "block";
+    err.style.display = "none";
+  }
 
-    if (view === "list") {
-      newBtn.classList.remove("hidden");
-      backBtn.classList.add("hidden");
-      logoutBtn.classList.remove("hidden");
-    } else {
-      newBtn.classList.add("hidden");
-      backBtn.classList.remove("hidden");
-      logoutBtn.classList.add("hidden");
-    }
+  function hideAuthMessages() {
+    document.getElementById("authError").style.display = "none";
+    document.getElementById("authSuccess").style.display = "none";
+  }
 
-    if (view === "list") renderList();
-    if (view === "form") initAutoResize();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  function showVerifyScreen(user) {
+    pendingVerifyUser = user;
+    document.getElementById("loginForm").classList.add("hidden");
+    document.getElementById("registerForm").classList.add("hidden");
+    document.getElementById("authTabs").classList.add("hidden");
+    document.getElementById("verifyScreen").classList.remove("hidden");
+    document.getElementById("verifyEmailBadge").textContent = user.email;
+    hideAuthMessages();
+  }
+
+  window.backToLogin = async () => {
+    if (pendingVerifyUser) { await signOut(auth); pendingVerifyUser = null; }
+    document.getElementById("verifyScreen").classList.add("hidden");
+    document.getElementById("authTabs").classList.remove("hidden");
+    switchTab("login");
+    hideAuthMessages();
   };
-  // ================================
 
-  onAuthStateChanged(auth, (user) => {
-    document.getElementById("loadingScreen").classList.add("hidden");
-    if (user) {
-      currentUser = user;
-      document.getElementById("userEmail").textContent = user.email;
-      document.getElementById("authScreen").classList.add("hidden");
-      document.getElementById("appScreen").classList.remove("hidden");
-      showView("list");
-      loadScripts().then(() => renderList()).catch(() => renderList());
-    } else {
-      currentUser = null; scripts = [];
-      document.getElementById("appScreen").classList.add("hidden");
-      document.getElementById("authScreen").classList.remove("hidden");
+  window.checkVerification = async () => {
+    const btn = document.getElementById("checkVerifyBtn");
+    btn.disabled = true; btn.textContent = "جاري التحقق...";
+    try {
+      await reload(pendingVerifyUser);
+      if (pendingVerifyUser.emailVerified) {
+        showAuthSuccess("✅ تم التحقق! جاري الدخول...");
+      } else {
+        showAuthError("⚠️ لم يتم التحقق بعد، افتح الإيميل واضغط الرابط أولاً");
+        btn.disabled = false; btn.textContent = "✅ تم التحقق، دخّلني";
+      }
+    } catch(e) {
+      showAuthError("حدث خطأ، حاول مرة ثانية");
+      btn.disabled = false; btn.textContent = "✅ تم التحقق، دخّلني";
     }
-  });
+  };
+
+  window.resendVerification = async () => {
+    const btn = document.getElementById("resendBtn");
+    btn.disabled = true; btn.textContent = "جاري الإرسال...";
+    try {
+      await sendEmailVerification(pendingVerifyUser);
+      showAuthSuccess("📨 تم إعادة إرسال رسالة التحقق");
+    } catch(e) {
+      showAuthError("حدث خطأ في الإرسال، انتظر قليلاً وحاول مجدداً");
+    }
+    setTimeout(() => { btn.disabled = false; btn.textContent = "إعادة إرسال الرسالة"; }, 30000);
+  };
 
   window.switchTab = (tab) => {
     document.getElementById("loginForm").classList.toggle("hidden", tab !== "login");
     document.getElementById("registerForm").classList.toggle("hidden", tab !== "register");
     document.getElementById("tabLogin").classList.toggle("active", tab === "login");
     document.getElementById("tabRegister").classList.toggle("active", tab === "register");
-    document.getElementById("authError").style.display = "none";
+    hideAuthMessages();
   };
 
   window.doLogin = async () => {
@@ -709,19 +809,68 @@
     if (pass.length < 6) return showAuthError("كلمة المرور لازم تكون 6 أحرف أو أكثر");
     btn.disabled = true; btn.textContent = "جاري الإنشاء...";
     try {
-      await createUserWithEmailAndPassword(auth, email, pass);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+      await sendEmailVerification(userCredential.user);
+      showVerifyScreen(userCredential.user);
     } catch (e) {
-      showAuthError("حدث خطأ: " + e.code);
-      btn.disabled = false; btn.textContent = "إنشاء حساب";
+      let msg = "حدث خطأ، حاول مرة ثانية";
+      if (e.code === "auth/email-already-in-use") msg = "هذا الإيميل مسجل مسبقاً";
+      if (e.code === "auth/invalid-email") msg = "صيغة الإيميل غلط";
+      showAuthError(msg);
     }
+    btn.disabled = false; btn.textContent = "إنشاء حساب";
   };
 
   window.doLogout = async () => { await signOut(auth); scripts = []; };
 
-  function showAuthError(msg) {
-    const el = document.getElementById("authError");
-    el.textContent = msg; el.style.display = "block";
-  }
+  onAuthStateChanged(auth, (user) => {
+    document.getElementById("loadingScreen").classList.add("hidden");
+
+    if (user) {
+      if (!user.emailVerified && pendingVerifyUser) return;
+      if (user.emailVerified && pendingVerifyUser) pendingVerifyUser = null;
+
+      currentUser = user;
+      document.getElementById("userEmail").textContent = user.email;
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("appScreen").classList.remove("hidden");
+      document.getElementById("loginBtn").disabled = false;
+      document.getElementById("loginBtn").textContent = "دخول";
+      showView("list");
+      loadScripts().then(() => renderList()).catch(() => renderList());
+    } else {
+      currentUser = null; scripts = []; pendingVerifyUser = null;
+      document.getElementById("appScreen").classList.add("hidden");
+      document.getElementById("authScreen").classList.remove("hidden");
+      document.getElementById("verifyScreen").classList.add("hidden");
+      document.getElementById("authTabs").classList.remove("hidden");
+      document.getElementById("loginForm").classList.remove("hidden");
+      document.getElementById("registerForm").classList.add("hidden");
+      document.getElementById("tabLogin").classList.add("active");
+      document.getElementById("tabRegister").classList.remove("active");
+    }
+  });
+
+  window.showView = (view) => {
+    ["listView","formView","detailView"].forEach(v =>
+      document.getElementById(v).classList.toggle("hidden", v !== view + "View")
+    );
+    const newBtn = document.getElementById("newBtn");
+    const backBtn = document.getElementById("backBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (view === "list") {
+      newBtn.classList.remove("hidden");
+      backBtn.classList.add("hidden");
+      logoutBtn.classList.remove("hidden");
+    } else {
+      newBtn.classList.add("hidden");
+      backBtn.classList.remove("hidden");
+      logoutBtn.classList.add("hidden");
+    }
+    if (view === "list") renderList();
+    if (view === "form") initAutoResize();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   async function loadScripts() {
     if (!currentUser) return;
