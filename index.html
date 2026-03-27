@@ -5,16 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com;
+    script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src https://fonts.gstatic.com;
-    connect-src https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+    connect-src https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.emailjs.com;
     img-src 'self' data:;
     frame-src 'none';
     object-src 'none';
   ">
   <title>سكربتاتي</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     :root {
       --bg: #080b12; --bg2: #0d1120; --surface: #111827;
@@ -95,13 +96,10 @@
     .search-input { width: 100%; padding: 13px 44px 13px 18px; background: var(--surface); border: 1px solid var(--border2); border-radius: 15px; font-family: inherit; font-size: 15px; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
     .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
     .search-input::placeholder { color: var(--text3); }
-
-    /* ✅ فلاتر المنصة والتصنيف والترتيب */
     .filters-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
     .filter-select { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; outline: none; transition: all .2s; }
     .filter-select:focus { border-color: var(--accent); color: var(--text); }
     .filter-select option { background: var(--surface2); }
-
     .pills { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
     .pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text3); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
     .pill:hover { border-color: var(--accent); color: var(--accent); }
@@ -147,10 +145,7 @@
     .section-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .section-header-label { font-size: 12px; font-weight: 800; flex: 1; }
     .section-header-tag { font-size: 10px; color: var(--text3); background: var(--bg2); padding: 2px 9px; border-radius: 10px; }
-
-    /* ✅ عداد الكلمات الحي */
     .section-word-count { font-size: 10px; color: var(--text3); background: var(--bg2); padding: 2px 9px; border-radius: 10px; }
-
     .section-textarea { width: 100%; padding: 14px 16px; background: var(--bg2); border: none; font-family: inherit; font-size: 15px; font-weight: 600; color: #ffffff; outline: none; resize: none; line-height: 1.8; min-height: 75px; overflow: hidden; }
     .section-textarea::placeholder { color: var(--text3); }
     .form-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; flex-wrap: wrap; }
@@ -176,11 +171,8 @@
     .btn-delete:hover { background: #fb718512; }
     .btn-edit { flex: 1; padding: 12px 26px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 12px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px #0ea5e930; transition: all .2s; }
     .btn-edit:hover { transform: translateY(-1px); }
-
-    /* ✅ زر النسخ */
     .btn-copy { padding: 12px 20px; background: transparent; border: 1px solid var(--border2); border-radius: 12px; color: var(--text2); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
     .btn-copy:hover { border-color: var(--green); color: var(--green); }
-
     .modal-overlay { position: fixed; inset: 0; background: #00000080; backdrop-filter: blur(4px); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .modal-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 28px; max-width: 360px; width: 100%; box-shadow: 0 24px 60px #00000080; }
     .modal-icon { font-size: 36px; text-align: center; margin-bottom: 14px; }
@@ -261,20 +253,26 @@
       </div>
       <button class="auth-btn" onclick="doRegister()" id="regBtn">إنشاء حساب</button>
     </div>
-    <div id="verifyScreen" class="hidden">
+
+    <!-- ✅ شاشة OTP الجديدة -->
+    <div id="otpScreen" class="hidden">
       <div class="verify-screen">
-        <div class="verify-icon">📧</div>
-        <div class="verify-title">تحقق من إيميلك</div>
-        <div class="verify-sub">أرسلنا لك رسالة تحقق على</div>
-        <div class="verify-email-badge" id="verifyEmailBadge"></div>
-        <div class="verify-sub">افتح الإيميل واضغط على رابط التفعيل،<br>ثم ارجع هنا وضغط "تم التحقق"</div>
+        <div class="verify-icon">🔐</div>
+        <div class="verify-title">أدخل كود التحقق</div>
+        <div class="verify-sub">أرسلنا كود من 6 أرقام على</div>
+        <div class="verify-email-badge" id="otpEmailBadge"></div>
+        <div class="verify-sub" style="margin-bottom:16px">صلاحية الكود 5 دقائق</div>
+        <input class="field-input" type="text" id="otpInput"
+          placeholder="000000" dir="ltr" maxlength="6" inputmode="numeric"
+          style="text-align:center;font-size:26px;letter-spacing:10px;font-weight:800;margin-bottom:16px" />
         <div class="verify-actions">
-          <button class="btn-verify-check" onclick="checkVerification()" id="checkVerifyBtn">✅ تم التحقق، دخّلني</button>
-          <button class="btn-resend" onclick="resendVerification()" id="resendBtn">إعادة إرسال الرسالة</button>
-          <button class="btn-back-login" onclick="backToLogin()">← رجوع لتسجيل الدخول</button>
+          <button class="btn-verify-check" id="verifyOTPBtn" onclick="verifyOTP()">✅ تحقق من الكود</button>
+          <button class="btn-resend" id="resendOTPBtn" onclick="resendOTP()">إرسال كود جديد</button>
+          <button class="btn-back-login" onclick="backFromOTP()">← رجوع</button>
         </div>
       </div>
     </div>
+
     <div class="auth-error" id="authError"></div>
     <div class="auth-success" id="authSuccess"></div>
   </div>
@@ -301,8 +299,6 @@
         <span class="search-icon">🔍</span>
         <input class="search-input" id="searchInput" placeholder="ابحث في السكربتات..." oninput="renderList()" maxlength="100" />
       </div>
-
-      <!-- ✅ فلاتر المنصة والتصنيف والترتيب -->
       <div class="filters-row">
         <select class="filter-select" id="filterPlatformSelect" onchange="setFilterPlatform(this.value)">
           <option value="الكل">كل المنصات</option>
@@ -325,7 +321,6 @@
           <option value="shortest">الأقصر</option>
         </select>
       </div>
-
       <div class="stats-grid" id="statsRow"></div>
       <div class="grid" id="grid"></div>
     </div>
@@ -353,8 +348,6 @@
             </select>
           </div>
         </div>
-
-        <!-- ✅ أقسام مع عداد كلمات حي -->
         <div class="script-section">
           <div class="section-header">
             <div class="section-dot" style="background:#fb7185"></div>
@@ -391,7 +384,6 @@
           </div>
           <textarea class="section-textarea" id="fCta" placeholder="احفظ، شير، كومنت..." maxlength="500"></textarea>
         </div>
-
         <div class="form-actions">
           <button class="btn-cancel" onclick="showView('list')">إلغاء</button>
           <button class="btn-save" onclick="saveScript()" id="saveBtn">حفظ السكربت</button>
@@ -418,8 +410,7 @@
     getAuth, onAuthStateChanged,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    sendEmailVerification,
-    reload, signOut
+    signOut
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
     getFirestore, collection, doc,
@@ -438,6 +429,15 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+
+  // ✅ إعدادات EmailJS
+  const EMAILJS_SERVICE_ID  = 'service_3pb42al';
+  const EMAILJS_TEMPLATE_ID = 'template_csa66tq';
+  const EMAILJS_PUBLIC_KEY  = 'J66hdfOwUZRPQ1nYu';
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+
+  // ✅ بيانات OTP المؤقتة
+  let otpData = { code: null, email: null, password: null, expires: null, attempts: 0 };
 
   function escapeHTML(str) {
     if (!str) return '';
@@ -472,15 +472,14 @@
   };
 
   let scripts=[], filterPlatform="الكل", filterCategory="الكل", sortBy="newest";
-  let currentScript=null, editingId=null, currentUser=null, pendingVerifyUser=null;
+  let currentScript=null, editingId=null, currentUser=null;
 
-  // ✅ عداد كلمات حي
   function initWordCounters() {
     const pairs = [
-      { id: 'fHook',   wc: 'wc-hook'   },
-      { id: 'fValue',  wc: 'wc-value'  },
-      { id: 'fResult', wc: 'wc-result' },
-      { id: 'fCta',    wc: 'wc-cta'    },
+      { id:'fHook',   wc:'wc-hook'   },
+      { id:'fValue',  wc:'wc-value'  },
+      { id:'fResult', wc:'wc-result' },
+      { id:'fCta',    wc:'wc-cta'    },
     ];
     pairs.forEach(({ id, wc }) => {
       const tx = document.getElementById(id);
@@ -491,7 +490,6 @@
     });
   }
 
-  // ✅ نسخ السكربت
   function copyScript(script) {
     const text = [
       `📌 ${script.title}`,
@@ -500,19 +498,19 @@
       `🎯 Result:\n${script.result||''}`,
       `📢 CTA:\n${script.cta||''}`,
     ].filter(Boolean).join('\n\n');
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('✅ تم نسخ السكربت!');
-    }).catch(() => showToast('❌ ما قدر ينسخ'));
+    navigator.clipboard.writeText(text)
+      .then(() => showToast('✅ تم نسخ السكربت!'))
+      .catch(() => showToast('❌ ما قدر ينسخ'));
   }
 
   function showDeleteModal(onConfirm) {
     const modal = document.getElementById('deleteModal');
     modal.classList.remove('hidden');
     const confirmBtn = document.getElementById('modalConfirmBtn');
-    const cancelBtn = document.getElementById('modalCancelBtn');
+    const cancelBtn  = document.getElementById('modalCancelBtn');
     const close = () => modal.classList.add('hidden');
     const newConfirm = confirmBtn.cloneNode(true);
-    const newCancel = cancelBtn.cloneNode(true);
+    const newCancel  = cancelBtn.cloneNode(true);
     confirmBtn.replaceWith(newConfirm);
     cancelBtn.replaceWith(newCancel);
     newConfirm.addEventListener('click', () => { close(); onConfirm(); });
@@ -537,52 +535,15 @@
     document.getElementById("authSuccess").style.display = "none";
   }
 
-  function showVerifyScreen(user) {
-    pendingVerifyUser = user;
-    document.getElementById("loginForm").classList.add("hidden");
+  // ✅ عرض شاشة OTP
+  function showOTPScreen(email) {
     document.getElementById("registerForm").classList.add("hidden");
     document.getElementById("authTabs").classList.add("hidden");
-    document.getElementById("verifyScreen").classList.remove("hidden");
-    document.getElementById("verifyEmailBadge").textContent = user.email;
+    document.getElementById("otpScreen").classList.remove("hidden");
+    document.getElementById("otpEmailBadge").textContent = email;
+    document.getElementById("otpInput").value = "";
     hideAuthMessages();
   }
-
-  window.backToLogin = async () => {
-    if (pendingVerifyUser) { await signOut(auth); pendingVerifyUser = null; }
-    document.getElementById("verifyScreen").classList.add("hidden");
-    document.getElementById("authTabs").classList.remove("hidden");
-    switchTab("login");
-    hideAuthMessages();
-  };
-
-  window.checkVerification = async () => {
-    const btn = document.getElementById("checkVerifyBtn");
-    btn.disabled = true; btn.textContent = "جاري التحقق...";
-    try {
-      await reload(pendingVerifyUser);
-      if (pendingVerifyUser.emailVerified) {
-        showAuthSuccess("✅ تم التحقق! جاري الدخول...");
-      } else {
-        showAuthError("⚠️ لم يتم التحقق بعد، افتح الإيميل واضغط الرابط أولاً");
-        btn.disabled = false; btn.textContent = "✅ تم التحقق، دخّلني";
-      }
-    } catch(e) {
-      showAuthError("حدث خطأ، حاول مرة ثانية");
-      btn.disabled = false; btn.textContent = "✅ تم التحقق، دخّلني";
-    }
-  };
-
-  window.resendVerification = async () => {
-    const btn = document.getElementById("resendBtn");
-    btn.disabled = true; btn.textContent = "جاري الإرسال...";
-    try {
-      await sendEmailVerification(pendingVerifyUser);
-      showAuthSuccess("📨 تم إعادة إرسال رسالة التحقق");
-    } catch(e) {
-      showAuthError("حدث خطأ في الإرسال، انتظر قليلاً وحاول مجدداً");
-    }
-    setTimeout(() => { btn.disabled = false; btn.textContent = "إعادة إرسال الرسالة"; }, 30000);
-  };
 
   window.switchTab = (tab) => {
     document.getElementById("loginForm").classList.toggle("hidden", tab !== "login");
@@ -594,8 +555,8 @@
 
   window.doLogin = async () => {
     const email = sanitizeInput(document.getElementById("loginEmail").value.trim(), 254);
-    const pass = document.getElementById("loginPass").value;
-    const btn = document.getElementById("loginBtn");
+    const pass  = document.getElementById("loginPass").value;
+    const btn   = document.getElementById("loginBtn");
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
     btn.disabled = true; btn.textContent = "جاري الدخول...";
     try {
@@ -606,24 +567,79 @@
     }
   };
 
+  // ✅ doRegister الجديدة — ترسل OTP بدل إنشاء الحساب مباشرة
   window.doRegister = async () => {
     const email = sanitizeInput(document.getElementById("regEmail").value.trim(), 254);
-    const pass = document.getElementById("regPass").value;
-    const btn = document.getElementById("regBtn");
+    const pass  = document.getElementById("regPass").value;
+    const btn   = document.getElementById("regBtn");
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
     if (pass.length < 6) return showAuthError("كلمة المرور لازم تكون 6 أحرف أو أكثر");
+    btn.disabled = true; btn.textContent = "جاري الإرسال...";
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    otpData = { code, email, password: pass, expires: Date.now() + 5 * 60 * 1000, attempts: 0 };
+
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,
+        { to_email: email, passcode: code });
+      showOTPScreen(email);
+    } catch(e) {
+      showAuthError("فشل إرسال الكود، تأكد من الإيميل وحاول مرة ثانية");
+    }
+    btn.disabled = false; btn.textContent = "إنشاء حساب";
+  };
+
+  // ✅ التحقق من OTP وإنشاء الحساب
+  window.verifyOTP = async () => {
+    const entered = document.getElementById("otpInput").value.trim();
+    const btn = document.getElementById("verifyOTPBtn");
+    if (!entered || entered.length !== 6) return showAuthError("أدخل الكود المكون من 6 أرقام");
+    if (Date.now() > otpData.expires) return showAuthError("انتهت صلاحية الكود، اطلب كوداً جديداً");
+    if (otpData.attempts >= 3) return showAuthError("تجاوزت عدد المحاولات، اطلب كوداً جديداً");
+
+    otpData.attempts++;
+    if (entered !== otpData.code) {
+      return showAuthError(`كود غلط، تبقى ${3 - otpData.attempts} محاولة`);
+    }
+
     btn.disabled = true; btn.textContent = "جاري الإنشاء...";
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      await sendEmailVerification(cred.user);
-      showVerifyScreen(cred.user);
+      await createUserWithEmailAndPassword(auth, otpData.email, otpData.password);
+      otpData = { code: null, email: null, password: null, expires: null, attempts: 0 };
     } catch(e) {
       let msg = "حدث خطأ، حاول مرة ثانية";
       if (e.code === "auth/email-already-in-use") msg = "هذا الإيميل مسجل مسبقاً";
       if (e.code === "auth/invalid-email") msg = "صيغة الإيميل غلط";
       showAuthError(msg);
+      btn.disabled = false; btn.textContent = "✅ تحقق من الكود";
     }
-    btn.disabled = false; btn.textContent = "إنشاء حساب";
+  };
+
+  // ✅ إعادة إرسال OTP
+  window.resendOTP = async () => {
+    const btn = document.getElementById("resendOTPBtn");
+    btn.disabled = true; btn.textContent = "جاري الإرسال...";
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    otpData.code     = code;
+    otpData.expires  = Date.now() + 5 * 60 * 1000;
+    otpData.attempts = 0;
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,
+        { to_email: otpData.email, passcode: code });
+      showAuthSuccess("📨 تم إرسال كود جديد");
+    } catch(e) {
+      showAuthError("فشل الإرسال، حاول مرة ثانية");
+    }
+    setTimeout(() => { btn.disabled = false; btn.textContent = "إرسال كود جديد"; }, 30000);
+  };
+
+  // ✅ رجوع من شاشة OTP
+  window.backFromOTP = () => {
+    otpData = { code: null, email: null, password: null, expires: null, attempts: 0 };
+    document.getElementById("otpScreen").classList.add("hidden");
+    document.getElementById("authTabs").classList.remove("hidden");
+    switchTab("register");
+    hideAuthMessages();
   };
 
   window.doLogout = async () => { await signOut(auth); scripts = []; };
@@ -631,8 +647,6 @@
   onAuthStateChanged(auth, (user) => {
     document.getElementById("loadingScreen").classList.add("hidden");
     if (user) {
-      if (!user.emailVerified && pendingVerifyUser) return;
-      if (user.emailVerified && pendingVerifyUser) pendingVerifyUser = null;
       currentUser = user;
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
@@ -642,10 +656,10 @@
       showView("list");
       loadScripts().then(() => renderList()).catch(() => renderList());
     } else {
-      currentUser = null; scripts = []; pendingVerifyUser = null;
+      currentUser = null; scripts = [];
       document.getElementById("appScreen").classList.add("hidden");
       document.getElementById("authScreen").classList.remove("hidden");
-      document.getElementById("verifyScreen").classList.add("hidden");
+      document.getElementById("otpScreen").classList.add("hidden");
       document.getElementById("authTabs").classList.remove("hidden");
       document.getElementById("loginForm").classList.remove("hidden");
       document.getElementById("registerForm").classList.add("hidden");
@@ -658,8 +672,8 @@
     ["listView","formView","detailView"].forEach(v =>
       document.getElementById(v).classList.toggle("hidden", v !== view+"View")
     );
-    const newBtn = document.getElementById("newBtn");
-    const backBtn = document.getElementById("backBtn");
+    const newBtn    = document.getElementById("newBtn");
+    const backBtn   = document.getElementById("backBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     if (view === "list") {
       newBtn.classList.remove("hidden");
@@ -717,7 +731,6 @@
     }, 50);
   }
 
-  // ✅ فلتر المنصة والتصنيف والترتيب
   window.setFilterPlatform = (val) => { filterPlatform = val; renderList(); };
   window.setFilterCategory = (val) => { filterCategory = val; renderList(); };
   window.setSort = (val) => { sortBy = val; renderList(); };
@@ -725,18 +738,16 @@
   window.renderList = () => {
     renderStats();
     const search = sanitizeInput(document.getElementById("searchInput").value,100).toLowerCase();
-
     let filtered = scripts.filter(s => {
-      const okSearch = !search || (s.title||"").toLowerCase().includes(search) || (s.hook||"").toLowerCase().includes(search);
+      const okSearch   = !search || (s.title||"").toLowerCase().includes(search) || (s.hook||"").toLowerCase().includes(search);
       const okPlatform = filterPlatform === "الكل" || s.platform === filterPlatform;
       const okCategory = filterCategory === "الكل" || s.category === filterCategory;
       return okSearch && okPlatform && okCategory;
     });
 
-    // ✅ الترتيب
-    if (sortBy === "newest") filtered.sort((a,b) => b.id - a.id);
-    else if (sortBy === "oldest") filtered.sort((a,b) => a.id - b.id);
-    else if (sortBy === "longest") filtered.sort((a,b) => wordCount(`${b.hook||""} ${b.value||""} ${b.result||""} ${b.cta||""}`) - wordCount(`${a.hook||""} ${a.value||""} ${a.result||""} ${a.cta||""}`));
+    if (sortBy === "newest")   filtered.sort((a,b) => b.id - a.id);
+    else if (sortBy === "oldest")   filtered.sort((a,b) => a.id - b.id);
+    else if (sortBy === "longest")  filtered.sort((a,b) => wordCount(`${b.hook||""} ${b.value||""} ${b.result||""} ${b.cta||""}`) - wordCount(`${a.hook||""} ${a.value||""} ${a.result||""} ${a.cta||""}`));
     else if (sortBy === "shortest") filtered.sort((a,b) => wordCount(`${a.hook||""} ${a.value||""} ${a.result||""} ${a.cta||""}`) - wordCount(`${b.hook||""} ${b.value||""} ${b.result||""} ${b.cta||""}`));
 
     const grid = document.getElementById("grid");
@@ -755,13 +766,13 @@
       const pc = PLATFORM_COLORS[s.platform] || PLATFORM_COLORS["شورتس"];
       const cc = CAT_COLORS[s.category] || CAT_COLORS["تقني"];
       const total = wordCount(`${s.hook||""} ${s.value||""} ${s.result||""} ${s.cta||""}`);
-      const safeTitle = escapeHTML(s.title);
-      const safeHook = escapeHTML(s.hook);
-      const safeId = escapeHTML(s.firestoreId);
+      const safeTitle    = escapeHTML(s.title);
+      const safeHook     = escapeHTML(s.hook);
+      const safeId       = escapeHTML(s.firestoreId);
       const safePlatform = escapeHTML(s.platform);
       const safeCategory = escapeHTML(s.category);
-      const safeDate = escapeHTML(s.date);
-      const hookPreview = safeHook.length > 90 ? safeHook.slice(0,90)+"..." : safeHook;
+      const safeDate     = escapeHTML(s.date);
+      const hookPreview  = safeHook.length > 90 ? safeHook.slice(0,90)+"..." : safeHook;
       return `
         <div class="card" data-id="${safeId}">
           <div class="card-accent-line" style="background:${pc.text}"></div>
@@ -805,13 +816,13 @@
   function openForm(script) {
     editingId = script ? script.firestoreId : null;
     document.getElementById("formTitle").textContent = script ? "تعديل السكربت" : "سكربت جديد";
-    document.getElementById("fTitle").value = script?.title || "";
+    document.getElementById("fTitle").value    = script?.title    || "";
     document.getElementById("fPlatform").value = validateSelect(script?.platform, ALLOWED_PLATFORMS, "شورتس");
     document.getElementById("fCategory").value = validateSelect(script?.category, ALLOWED_CATEGORIES, "تقني");
-    document.getElementById("fHook").value = script?.hook || "";
-    document.getElementById("fValue").value = script?.value || "";
-    document.getElementById("fResult").value = script?.result || "";
-    document.getElementById("fCta").value = script?.cta || "";
+    document.getElementById("fHook").value     = script?.hook     || "";
+    document.getElementById("fValue").value    = script?.value    || "";
+    document.getElementById("fResult").value   = script?.result   || "";
+    document.getElementById("fCta").value      = script?.cta      || "";
     showView("form");
   }
   window.openForm = openForm;
@@ -886,8 +897,8 @@
     const actionsDiv = document.getElementById("detailActions");
     actionsDiv.innerHTML = `
       <button class="btn-delete" id="btnDelete">حذف</button>
-      <button class="btn-copy" id="btnCopy">📋 نسخ</button>
-      <button class="btn-edit" id="btnEdit">تعديل السكربت</button>`;
+      <button class="btn-copy"   id="btnCopy">📋 نسخ</button>
+      <button class="btn-edit"   id="btnEdit">تعديل السكربت</button>`;
 
     document.getElementById("btnEdit").addEventListener("click", () => openForm(currentScript));
     document.getElementById("btnCopy").addEventListener("click", () => copyScript(currentScript));
