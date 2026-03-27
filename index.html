@@ -3,8 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- ✅ إصلاح 1: CSP يمنع تنفيذ سكربتات خارجية غير مصرح بها -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com;
@@ -15,11 +13,9 @@
     frame-src 'none';
     object-src 'none';
   ">
-
   <title>سكربتاتي</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
   <style>
-    /* ===== نفس الـ CSS الأصلي بدون تغيير ===== */
     :root {
       --bg: #080b12; --bg2: #0d1120; --surface: #111827;
       --surface2: #1a2235; --surface3: #1f2a40;
@@ -62,7 +58,7 @@
     .field-input::placeholder { color: var(--text3); }
     .auth-btn { width: 100%; margin-top: 8px; padding: 14px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 13px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 24px #0ea5e930; transition: all .2s; position: relative; overflow: hidden; }
     .auth-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #ffffff15 0%, transparent 100%); }
-    .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 32px #0ea5e940; }
+    .auth-btn:hover { transform: translateY(-1px); }
     .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .auth-error { margin-top: 14px; padding: 12px 16px; border-radius: 12px; background: #fb718512; border: 1px solid #fb718530; color: var(--red); font-size: 13px; display: none; }
     .auth-success { margin-top: 14px; padding: 12px 16px; border-radius: 12px; background: #34d39912; border: 1px solid #34d39930; color: var(--green); font-size: 13px; display: none; line-height: 1.7; }
@@ -99,6 +95,13 @@
     .search-input { width: 100%; padding: 13px 44px 13px 18px; background: var(--surface); border: 1px solid var(--border2); border-radius: 15px; font-family: inherit; font-size: 15px; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
     .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
     .search-input::placeholder { color: var(--text3); }
+
+    /* ✅ فلاتر المنصة والتصنيف والترتيب */
+    .filters-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+    .filter-select { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; outline: none; transition: all .2s; }
+    .filter-select:focus { border-color: var(--accent); color: var(--text); }
+    .filter-select option { background: var(--surface2); }
+
     .pills { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
     .pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text3); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
     .pill:hover { border-color: var(--accent); color: var(--accent); }
@@ -116,7 +119,7 @@
     .badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
     .date-text { font-size: 11px; color: var(--text3); margin-right: auto; }
     .card-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 8px; line-height: 1.4; }
-    .card-hook { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 12px; }
+    .card-hook { font-size: 13px; font-weight: 600; color: #ffffff; line-height: 1.7; margin-bottom: 12px; }
     .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 10px; }
     .word-count { font-size: 11px; color: var(--text3); }
     .card-arrow { color: var(--text3); font-size: 14px; }
@@ -144,9 +147,11 @@
     .section-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .section-header-label { font-size: 12px; font-weight: 800; flex: 1; }
     .section-header-tag { font-size: 10px; color: var(--text3); background: var(--bg2); padding: 2px 9px; border-radius: 10px; }
-    .section-textarea { width: 100%; padding: 14px 16px; background: var(--bg2); border: none; font-family: inherit; font-size: 15px; font-weight: 600; color: #ffffff; outline: none; resize: none; line-height: 1.8;
 
-min-height: 75px; overflow: hidden; }
+    /* ✅ عداد الكلمات الحي */
+    .section-word-count { font-size: 10px; color: var(--text3); background: var(--bg2); padding: 2px 9px; border-radius: 10px; }
+
+    .section-textarea { width: 100%; padding: 14px 16px; background: var(--bg2); border: none; font-family: inherit; font-size: 15px; font-weight: 600; color: #ffffff; outline: none; resize: none; line-height: 1.8; min-height: 75px; overflow: hidden; }
     .section-textarea::placeholder { color: var(--text3); }
     .form-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; flex-wrap: wrap; }
     .btn-cancel { padding: 12px 22px; background: transparent; border: 1px solid var(--border2); border-radius: 12px; color: var(--text2); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
@@ -165,16 +170,17 @@ min-height: 75px; overflow: hidden; }
     .detail-section-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
     .detail-section-dot { width: 8px; height: 8px; border-radius: 50%; }
     .detail-section-label { font-size: 12px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
-    .detail-section-body { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; font-size: 15px; font-weight: 600; line-height: 1.9; color: #ffffff; white-space: pre-wrap;
-
-}
-    .detail-actions { display: flex; gap: 10px; padding: 20px 24px; border-top: 1px solid var(--border); background: var(--bg2); }
+    .detail-section-body { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; font-size: 15px; font-weight: 600; line-height: 1.9; color: #ffffff; white-space: pre-wrap; }
+    .detail-actions { display: flex; gap: 10px; padding: 20px 24px; border-top: 1px solid var(--border); background: var(--bg2); flex-wrap: wrap; }
     .btn-delete { padding: 12px 20px; background: transparent; border: 1px solid #fb718530; border-radius: 12px; color: var(--red); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
     .btn-delete:hover { background: #fb718512; }
     .btn-edit { flex: 1; padding: 12px 26px; background: linear-gradient(135deg, var(--accent2), #0284c7); border: none; border-radius: 12px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px #0ea5e930; transition: all .2s; }
     .btn-edit:hover { transform: translateY(-1px); }
 
-    /* ✅ إصلاح: Modal للحذف بدل confirm() */
+    /* ✅ زر النسخ */
+    .btn-copy { padding: 12px 20px; background: transparent; border: 1px solid var(--border2); border-radius: 12px; color: var(--text2); font-family: inherit; font-size: 14px; cursor: pointer; transition: all .2s; }
+    .btn-copy:hover { border-color: var(--green); color: var(--green); }
+
     .modal-overlay { position: fixed; inset: 0; background: #00000080; backdrop-filter: blur(4px); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .modal-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 28px; max-width: 360px; width: 100%; box-shadow: 0 24px 60px #00000080; }
     .modal-icon { font-size: 36px; text-align: center; margin-bottom: 14px; }
@@ -185,7 +191,6 @@ min-height: 75px; overflow: hidden; }
     .modal-cancel:hover { border-color: var(--text3); }
     .modal-confirm { flex: 1; padding: 12px; background: #fb718520; border: 1px solid #fb718540; border-radius: 12px; color: var(--red); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
     .modal-confirm:hover { background: #fb718530; }
-
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface3); border: 1px solid var(--border2); border-radius: 16px; padding: 13px 28px; font-size: 14px; font-weight: 600; color: var(--text); z-index: 999; box-shadow: 0 12px 40px #00000060; opacity: 0; pointer-events: none; transition: all .3s cubic-bezier(.34, 1.56, .64, 1); white-space: nowrap; }
     .toast.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
     .hidden { display: none !important; }
@@ -202,7 +207,6 @@ min-height: 75px; overflow: hidden; }
 <div class="blob blob-3"></div>
 <div class="toast" id="toast"></div>
 
-<!-- ✅ إصلاح: Modal حذف آمن بدل confirm() -->
 <div class="modal-overlay hidden" id="deleteModal">
   <div class="modal-box">
     <div class="modal-icon">🗑️</div>
@@ -297,7 +301,31 @@ min-height: 75px; overflow: hidden; }
         <span class="search-icon">🔍</span>
         <input class="search-input" id="searchInput" placeholder="ابحث في السكربتات..." oninput="renderList()" maxlength="100" />
       </div>
-      <div class="pills" id="pills"></div>
+
+      <!-- ✅ فلاتر المنصة والتصنيف والترتيب -->
+      <div class="filters-row">
+        <select class="filter-select" id="filterPlatformSelect" onchange="setFilterPlatform(this.value)">
+          <option value="الكل">كل المنصات</option>
+          <option value="شورتس">شورتس</option>
+          <option value="ريلز">ريلز</option>
+          <option value="تيك توك">تيك توك</option>
+          <option value="يوتيوب">يوتيوب</option>
+        </select>
+        <select class="filter-select" id="filterCategorySelect" onchange="setFilterCategory(this.value)">
+          <option value="الكل">كل التصنيفات</option>
+          <option value="تقني">تقني</option>
+          <option value="تعليمي">تعليمي</option>
+          <option value="ترفيهي">ترفيهي</option>
+          <option value="نصائح">نصائح</option>
+        </select>
+        <select class="filter-select" id="sortSelect" onchange="setSort(this.value)">
+          <option value="newest">الأحدث</option>
+          <option value="oldest">الأقدم</option>
+          <option value="longest">الأطول</option>
+          <option value="shortest">الأقصر</option>
+        </select>
+      </div>
+
       <div class="stats-grid" id="statsRow"></div>
       <div class="grid" id="grid"></div>
     </div>
@@ -325,11 +353,14 @@ min-height: 75px; overflow: hidden; }
             </select>
           </div>
         </div>
+
+        <!-- ✅ أقسام مع عداد كلمات حي -->
         <div class="script-section">
           <div class="section-header">
             <div class="section-dot" style="background:#fb7185"></div>
             <span class="section-header-label" style="color:#fb7185">Hook — الخطاف</span>
             <span class="section-header-tag">0-3 ثواني</span>
+            <span class="section-word-count" id="wc-hook">0 كلمة</span>
           </div>
           <textarea class="section-textarea" id="fHook" placeholder="الجملة الأولى اللي تجذب المشاهد..." maxlength="2000"></textarea>
         </div>
@@ -338,6 +369,7 @@ min-height: 75px; overflow: hidden; }
             <div class="section-dot" style="background:#38bdf8"></div>
             <span class="section-header-label" style="color:#38bdf8">Value — المحتوى</span>
             <span class="section-header-tag">الجوهر</span>
+            <span class="section-word-count" id="wc-value">0 كلمة</span>
           </div>
           <textarea class="section-textarea" id="fValue" placeholder="الخطوات أو المعلومات..." maxlength="5000"></textarea>
         </div>
@@ -346,6 +378,7 @@ min-height: 75px; overflow: hidden; }
             <div class="section-dot" style="background:#34d399"></div>
             <span class="section-header-label" style="color:#34d399">Result — النتيجة</span>
             <span class="section-header-tag">الفائدة</span>
+            <span class="section-word-count" id="wc-result">0 كلمة</span>
           </div>
           <textarea class="section-textarea" id="fResult" placeholder="شو بيصير بعد ما يطبق الشخص؟" maxlength="2000"></textarea>
         </div>
@@ -354,9 +387,11 @@ min-height: 75px; overflow: hidden; }
             <div class="section-dot" style="background:#a78bfa"></div>
             <span class="section-header-label" style="color:#a78bfa">CTA — الدعوة للتفاعل</span>
             <span class="section-header-tag">الختام</span>
+            <span class="section-word-count" id="wc-cta">0 كلمة</span>
           </div>
           <textarea class="section-textarea" id="fCta" placeholder="احفظ، شير، كومنت..." maxlength="500"></textarea>
         </div>
+
         <div class="form-actions">
           <button class="btn-cancel" onclick="showView('list')">إلغاء</button>
           <button class="btn-save" onclick="saveScript()" id="saveBtn">حفظ السكربت</button>
@@ -404,9 +439,6 @@ min-height: 75px; overflow: hidden; }
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ============================================================
-  // ✅ إصلاح XSS 1: دالة تنظيف HTML — تمنع حقن الكود الخبيث
-  // ============================================================
   function escapeHTML(str) {
     if (!str) return '';
     const d = document.createElement('div');
@@ -414,44 +446,65 @@ min-height: 75px; overflow: hidden; }
     return d.innerHTML;
   }
 
-  // ============================================================
-  // ✅ إصلاح XSS 2: تنظيف المدخلات قبل الحفظ
-  // ============================================================
   function sanitizeInput(str, maxLen = 5000) {
     if (!str) return '';
-    // إزالة null bytes والتحكم في الطول
     return String(str).replace(/\0/g, '').trim().slice(0, maxLen);
   }
 
-  // ============================================================
-  // ✅ إصلاح: التحقق من القيم المسموح بها للـ select
-  // ============================================================
-  const ALLOWED_PLATFORMS = ["شورتس", "ريلز", "تيك توك", "يوتيوب"];
-  const ALLOWED_CATEGORIES = ["تقني", "تعليمي", "ترفيهي", "نصائح"];
+  const ALLOWED_PLATFORMS = ["شورتس","ريلز","تيك توك","يوتيوب"];
+  const ALLOWED_CATEGORIES = ["تقني","تعليمي","ترفيهي","نصائح"];
 
   function validateSelect(value, allowed, fallback) {
     return allowed.includes(value) ? value : fallback;
   }
 
   const PLATFORM_COLORS = {
-    "شورتس":   { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
-    "ريلز":    { bg: "#f472b620", text: "#f472b6", border: "#f472b640" },
-    "تيك توك": { bg: "#94a3b820", text: "#94a3b8", border: "#94a3b840" },
-    "يوتيوب":  { bg: "#fb718520", text: "#fb7185", border: "#fb718540" },
+    "شورتس":   { bg:"#fb718520", text:"#fb7185", border:"#fb718540" },
+    "ريلز":    { bg:"#f472b620", text:"#f472b6", border:"#f472b640" },
+    "تيك توك": { bg:"#94a3b820", text:"#94a3b8", border:"#94a3b840" },
+    "يوتيوب":  { bg:"#fb718520", text:"#fb7185", border:"#fb718540" },
   };
   const CAT_COLORS = {
-    "تقني":    { bg: "#38bdf820", text: "#38bdf8", border: "#38bdf840" },
-    "تعليمي":  { bg: "#34d39920", text: "#34d399", border: "#34d39940" },
-    "ترفيهي":  { bg: "#fbbf2420", text: "#fbbf24", border: "#fbbf2440" },
-    "نصائح":   { bg: "#a78bfa20", text: "#a78bfa", border: "#a78bfa40" },
+    "تقني":   { bg:"#38bdf820", text:"#38bdf8", border:"#38bdf840" },
+    "تعليمي": { bg:"#34d39920", text:"#34d399", border:"#34d39940" },
+    "ترفيهي": { bg:"#fbbf2420", text:"#fbbf24", border:"#fbbf2440" },
+    "نصائح":  { bg:"#a78bfa20", text:"#a78bfa", border:"#a78bfa40" },
   };
 
-  let scripts = [], filterPlatform = "الكل", currentScript = null, editingId = null, currentUser = null;
-  let pendingVerifyUser = null;
+  let scripts=[], filterPlatform="الكل", filterCategory="الكل", sortBy="newest";
+  let currentScript=null, editingId=null, currentUser=null, pendingVerifyUser=null;
 
-  // ============================================================
-  // ✅ إصلاح: Modal حذف آمن بدل confirm()
-  // ============================================================
+  // ✅ عداد كلمات حي
+  function initWordCounters() {
+    const pairs = [
+      { id: 'fHook',   wc: 'wc-hook'   },
+      { id: 'fValue',  wc: 'wc-value'  },
+      { id: 'fResult', wc: 'wc-result' },
+      { id: 'fCta',    wc: 'wc-cta'    },
+    ];
+    pairs.forEach(({ id, wc }) => {
+      const tx = document.getElementById(id);
+      const el = document.getElementById(wc);
+      const update = () => { el.textContent = wordCount(tx.value) + ' كلمة'; };
+      tx.addEventListener('input', update);
+      update();
+    });
+  }
+
+  // ✅ نسخ السكربت
+  function copyScript(script) {
+    const text = [
+      `📌 ${script.title}`,
+      `🔴 Hook:\n${script.hook||''}`,
+      `📦 Value:\n${script.value||''}`,
+      `🎯 Result:\n${script.result||''}`,
+      `📢 CTA:\n${script.cta||''}`,
+    ].filter(Boolean).join('\n\n');
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('✅ تم نسخ السكربت!');
+    }).catch(() => showToast('❌ ما قدر ينسخ'));
+  }
+
   function showDeleteModal(onConfirm) {
     const modal = document.getElementById('deleteModal');
     modal.classList.remove('hidden');
@@ -469,17 +522,13 @@ min-height: 75px; overflow: hidden; }
 
   function showAuthError(msg) {
     const el = document.getElementById("authError");
-    // ✅ textContent بدل innerHTML — آمن من XSS
-    el.textContent = msg;
-    el.style.display = "block";
+    el.textContent = msg; el.style.display = "block";
     document.getElementById("authSuccess").style.display = "none";
   }
 
   function showAuthSuccess(msg) {
     const el = document.getElementById("authSuccess");
-    // ✅ textContent بدل innerHTML
-    el.textContent = msg;
-    el.style.display = "block";
+    el.textContent = msg; el.style.display = "block";
     document.getElementById("authError").style.display = "none";
   }
 
@@ -494,7 +543,6 @@ min-height: 75px; overflow: hidden; }
     document.getElementById("registerForm").classList.add("hidden");
     document.getElementById("authTabs").classList.add("hidden");
     document.getElementById("verifyScreen").classList.remove("hidden");
-    // ✅ textContent بدل innerHTML للإيميل
     document.getElementById("verifyEmailBadge").textContent = user.email;
     hideAuthMessages();
   }
@@ -552,7 +600,7 @@ min-height: 75px; overflow: hidden; }
     btn.disabled = true; btn.textContent = "جاري الدخول...";
     try {
       await signInWithEmailAndPassword(auth, email, pass);
-    } catch (e) {
+    } catch(e) {
       showAuthError("بيانات الدخول غلط، حاول مرة ثانية");
       btn.disabled = false; btn.textContent = "دخول";
     }
@@ -569,7 +617,7 @@ min-height: 75px; overflow: hidden; }
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       await sendEmailVerification(cred.user);
       showVerifyScreen(cred.user);
-    } catch (e) {
+    } catch(e) {
       let msg = "حدث خطأ، حاول مرة ثانية";
       if (e.code === "auth/email-already-in-use") msg = "هذا الإيميل مسجل مسبقاً";
       if (e.code === "auth/invalid-email") msg = "صيغة الإيميل غلط";
@@ -586,7 +634,6 @@ min-height: 75px; overflow: hidden; }
       if (!user.emailVerified && pendingVerifyUser) return;
       if (user.emailVerified && pendingVerifyUser) pendingVerifyUser = null;
       currentUser = user;
-      // ✅ textContent للإيميل — آمن
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("appScreen").classList.remove("hidden");
@@ -609,7 +656,7 @@ min-height: 75px; overflow: hidden; }
 
   window.showView = (view) => {
     ["listView","formView","detailView"].forEach(v =>
-      document.getElementById(v).classList.toggle("hidden", v !== view + "View")
+      document.getElementById(v).classList.toggle("hidden", v !== view+"View")
     );
     const newBtn = document.getElementById("newBtn");
     const backBtn = document.getElementById("backBtn");
@@ -624,78 +671,86 @@ min-height: 75px; overflow: hidden; }
       logoutBtn.classList.add("hidden");
     }
     if (view === "list") renderList();
-    if (view === "form") initAutoResize();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (view === "form") { initAutoResize(); initWordCounters(); }
+    window.scrollTo({ top:0, behavior:"smooth" });
   };
 
   async function loadScripts() {
     if (!currentUser) return;
     try {
-      const q = query(collection(db, "scripts"), where("uid", "==", currentUser.uid));
+      const q = query(collection(db,"scripts"), where("uid","==",currentUser.uid));
       const snap = await getDocs(q);
       scripts = snap.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
-      scripts.sort((a, b) => b.id - a.id);
-    } catch (e) { scripts = []; }
+      scripts.sort((a,b) => b.id - a.id);
+    } catch(e) { scripts = []; }
   }
 
   async function saveToFirestore(script) {
     try {
       if (script.firestoreId) {
         const { firestoreId, ...data } = script;
-        await updateDoc(doc(db, "scripts", firestoreId), data);
+        await updateDoc(doc(db,"scripts",firestoreId), data);
         return firestoreId;
       } else {
-        const ref = await addDoc(collection(db, "scripts"), script);
+        const ref = await addDoc(collection(db,"scripts"), script);
         return ref.id;
       }
-    } catch (e) { console.error("Save:", e); }
+    } catch(e) { console.error("Save:",e); }
   }
 
   async function deleteFromFirestore(id) {
-    try { await deleteDoc(doc(db, "scripts", id)); } catch (e) {}
+    try { await deleteDoc(doc(db,"scripts",id)); } catch(e) {}
   }
 
   window.showToast = (msg) => {
     const t = document.getElementById("toast");
-    // ✅ textContent بدل innerHTML للـ toast
-    t.textContent = msg;
-    t.classList.add("show");
+    t.textContent = msg; t.classList.add("show");
     setTimeout(() => t.classList.remove("show"), 2600);
   };
 
   function initAutoResize() {
     setTimeout(() => {
       document.querySelectorAll("textarea").forEach(tx => {
-        const resize = () => { tx.style.height = "auto"; tx.style.height = tx.scrollHeight + "px"; };
+        const resize = () => { tx.style.height="auto"; tx.style.height=tx.scrollHeight+"px"; };
         resize(); tx.oninput = resize;
       });
     }, 50);
   }
 
+  // ✅ فلتر المنصة والتصنيف والترتيب
+  window.setFilterPlatform = (val) => { filterPlatform = val; renderList(); };
+  window.setFilterCategory = (val) => { filterCategory = val; renderList(); };
+  window.setSort = (val) => { sortBy = val; renderList(); };
+
   window.renderList = () => {
-    renderPills(); renderStats();
-    const search = sanitizeInput(document.getElementById("searchInput").value, 100).toLowerCase();
-    const filtered = scripts.filter(s => {
-      const ok = !search || (s.title||"").toLowerCase().includes(search) || (s.hook||"").toLowerCase().includes(search);
-      return ok && (filterPlatform === "الكل" || s.platform === filterPlatform);
+    renderStats();
+    const search = sanitizeInput(document.getElementById("searchInput").value,100).toLowerCase();
+
+    let filtered = scripts.filter(s => {
+      const okSearch = !search || (s.title||"").toLowerCase().includes(search) || (s.hook||"").toLowerCase().includes(search);
+      const okPlatform = filterPlatform === "الكل" || s.platform === filterPlatform;
+      const okCategory = filterCategory === "الكل" || s.category === filterCategory;
+      return okSearch && okPlatform && okCategory;
     });
+
+    // ✅ الترتيب
+    if (sortBy === "newest") filtered.sort((a,b) => b.id - a.id);
+    else if (sortBy === "oldest") filtered.sort((a,b) => a.id - b.id);
+    else if (sortBy === "longest") filtered.sort((a,b) => wordCount(`${b.hook||""} ${b.value||""} ${b.result||""} ${b.cta||""}`) - wordCount(`${a.hook||""} ${a.value||""} ${a.result||""} ${a.cta||""}`));
+    else if (sortBy === "shortest") filtered.sort((a,b) => wordCount(`${a.hook||""} ${a.value||""} ${a.result||""} ${a.cta||""}`) - wordCount(`${b.hook||""} ${b.value||""} ${b.result||""} ${b.cta||""}`));
 
     const grid = document.getElementById("grid");
     if (filtered.length === 0) {
-      // ✅ هنا نستخدم innerHTML بس للـ template الثابت — بدون بيانات المستخدم
       grid.innerHTML = `
         <div class="empty">
-          <div class="empty-icon">${scripts.length === 0 ? "✍️" : "🔍"}</div>
-          <div class="empty-title">${scripts.length === 0 ? "ابدأ مكتبتك الآن" : "ما في نتائج"}</div>
-          <div class="empty-sub">${scripts.length === 0 ? "أضف أول سكربت وابدأ بناء محتواك" : "جرب كلمة بحث ثانية"}</div>
-          ${scripts.length === 0 ? `<button class="btn-primary" onclick="openForm(null)">+ أضف أول سكربت</button>` : ""}
+          <div class="empty-icon">${scripts.length===0?"✍️":"🔍"}</div>
+          <div class="empty-title">${scripts.length===0?"ابدأ مكتبتك الآن":"ما في نتائج"}</div>
+          <div class="empty-sub">${scripts.length===0?"أضف أول سكربت وابدأ بناء محتواك":"جرب كلمة بحث ثانية"}</div>
+          ${scripts.length===0?`<button class="btn-primary" onclick="openForm(null)">+ أضف أول سكربت</button>`:""}
         </div>`;
       return;
     }
 
-    // ============================================================
-    // ✅ إصلاح XSS الرئيسي: escapeHTML على كل بيانات المستخدم
-    // ============================================================
     grid.innerHTML = filtered.map(s => {
       const pc = PLATFORM_COLORS[s.platform] || PLATFORM_COLORS["شورتس"];
       const cc = CAT_COLORS[s.category] || CAT_COLORS["تقني"];
@@ -706,8 +761,7 @@ min-height: 75px; overflow: hidden; }
       const safePlatform = escapeHTML(s.platform);
       const safeCategory = escapeHTML(s.category);
       const safeDate = escapeHTML(s.date);
-      const hookPreview = safeHook.length > 90 ? safeHook.slice(0, 90) + "..." : safeHook;
-
+      const hookPreview = safeHook.length > 90 ? safeHook.slice(0,90)+"..." : safeHook;
       return `
         <div class="card" data-id="${safeId}">
           <div class="card-accent-line" style="background:${pc.text}"></div>
@@ -717,7 +771,7 @@ min-height: 75px; overflow: hidden; }
             <span class="date-text">${safeDate}</span>
           </div>
           <div class="card-title">${safeTitle}</div>
-          ${safeHook ? `<div class="card-hook">${hookPreview}</div>` : ""}
+          ${safeHook?`<div class="card-hook">${hookPreview}</div>`:""}
           <div class="card-footer">
             <span class="word-count">${total} كلمة</span>
             <span class="card-arrow">←</span>
@@ -725,37 +779,19 @@ min-height: 75px; overflow: hidden; }
         </div>`;
     }).join("");
 
-    // ✅ addEventListener بدل onclick inline — يمنع XSS عبر الـ attributes
     grid.querySelectorAll(".card[data-id]").forEach(card => {
       card.addEventListener("click", () => openDetail(card.dataset.id));
     });
   };
 
-  function renderPills() {
-    const pills = ["الكل","شورتس","ريلز","تيك توك","يوتيوب"];
-    // ✅ هذه قيم ثابتة من الكود — ليست من المستخدم — آمنة
-    document.getElementById("pills").innerHTML = pills.map(p =>
-      `<button class="pill ${filterPlatform===p?'active':''}" data-filter="${escapeHTML(p)}">${escapeHTML(p)}</button>`
-    ).join("");
-    document.getElementById("pills").querySelectorAll(".pill").forEach(btn => {
-      btn.addEventListener("click", () => setFilter(btn.dataset.filter));
-    });
-  }
-
-  window.setFilter = (p) => {
-    if (!["الكل","شورتس","ريلز","تيك توك","يوتيوب"].includes(p)) return;
-    filterPlatform = p; renderList();
-  };
-
   function renderStats() {
     const platforms = ["شورتس","ريلز","تيك توك","يوتيوب"];
-    // ✅ القيم هنا أرقام وقيم ثابتة — آمنة
     document.getElementById("statsRow").innerHTML = `
       <div class="stat-card">
         <span class="stat-num">${scripts.length}</span>
         <span class="stat-label">المجموع</span>
       </div>
-      ${platforms.map(p => `
+      ${platforms.map(p=>`
         <div class="stat-card">
           <span class="stat-num">${scripts.filter(s=>s.platform===p).length}</span>
           <span class="stat-label">${escapeHTML(p)}</span>
@@ -768,7 +804,6 @@ min-height: 75px; overflow: hidden; }
 
   function openForm(script) {
     editingId = script ? script.firestoreId : null;
-    // ✅ textContent بدل innerHTML للعنوان
     document.getElementById("formTitle").textContent = script ? "تعديل السكربت" : "سكربت جديد";
     document.getElementById("fTitle").value = script?.title || "";
     document.getElementById("fPlatform").value = validateSelect(script?.platform, ALLOWED_PLATFORMS, "شورتس");
@@ -782,26 +817,22 @@ min-height: 75px; overflow: hidden; }
   window.openForm = openForm;
 
   window.saveScript = async () => {
-    // ✅ sanitizeInput على كل المدخلات قبل الحفظ
     const title = sanitizeInput(document.getElementById("fTitle").value.trim(), 200);
     if (!title) return showToast("⚠️ أضف عنوان للسكربت");
     const btn = document.getElementById("saveBtn");
     btn.disabled = true; btn.textContent = "جاري الحفظ...";
 
-    const platform = validateSelect(document.getElementById("fPlatform").value, ALLOWED_PLATFORMS, "شورتس");
-    const category = validateSelect(document.getElementById("fCategory").value, ALLOWED_CATEGORIES, "تقني");
-
     const script = {
       title,
-      platform,
-      category,
+      platform: validateSelect(document.getElementById("fPlatform").value, ALLOWED_PLATFORMS, "شورتس"),
+      category: validateSelect(document.getElementById("fCategory").value, ALLOWED_CATEGORIES, "تقني"),
       hook:   sanitizeInput(document.getElementById("fHook").value,   2000),
       value:  sanitizeInput(document.getElementById("fValue").value,  5000),
       result: sanitizeInput(document.getElementById("fResult").value, 2000),
       cta:    sanitizeInput(document.getElementById("fCta").value,    500),
       date: new Date().toLocaleDateString("ar-IQ"),
       uid: currentUser.uid,
-      id: editingId ? (scripts.find(s=>s.firestoreId===editingId)?.id || Date.now()) : Date.now(),
+      id: editingId ? (scripts.find(s=>s.firestoreId===editingId)?.id||Date.now()) : Date.now(),
     };
     if (editingId) script.firestoreId = editingId;
 
@@ -827,14 +858,11 @@ min-height: 75px; overflow: hidden; }
     const pc = PLATFORM_COLORS[script.platform] || PLATFORM_COLORS["شورتس"];
     const cc = CAT_COLORS[script.category] || CAT_COLORS["تقني"];
 
-    // ✅ escapeHTML على كل قيم المستخدم في dBadges
-    const dBadges = document.getElementById("dBadges");
-    dBadges.innerHTML = `
+    document.getElementById("dBadges").innerHTML = `
       <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${escapeHTML(script.platform)}</span>
       <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border};margin-right:6px">${escapeHTML(script.category)}</span>
       <span class="detail-date">${escapeHTML(script.date)}</span>`;
 
-    // ✅ textContent للعنوان — أكثر أماناً
     document.getElementById("dTitle").textContent = script.title;
 
     const sections = [
@@ -844,7 +872,6 @@ min-height: 75px; overflow: hidden; }
       { key:"cta",    label:"CTA — الدعوة",     color:"#a78bfa" },
     ];
 
-    // ✅ escapeHTML على محتوى السكربت
     document.getElementById("dSections").innerHTML = sections
       .filter(s => script[s.key])
       .map(s => `
@@ -859,12 +886,12 @@ min-height: 75px; overflow: hidden; }
     const actionsDiv = document.getElementById("detailActions");
     actionsDiv.innerHTML = `
       <button class="btn-delete" id="btnDelete">حذف</button>
+      <button class="btn-copy" id="btnCopy">📋 نسخ</button>
       <button class="btn-edit" id="btnEdit">تعديل السكربت</button>`;
 
-    // ✅ addEventListener بدل onclick inline
     document.getElementById("btnEdit").addEventListener("click", () => openForm(currentScript));
+    document.getElementById("btnCopy").addEventListener("click", () => copyScript(currentScript));
     document.getElementById("btnDelete").addEventListener("click", () => {
-      // ✅ Modal آمن بدل confirm()
       showDeleteModal(() => deleteCurrentScript());
     });
 
