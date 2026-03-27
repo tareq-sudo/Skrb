@@ -8,13 +8,14 @@
     script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src https://fonts.gstatic.com;
-    connect-src https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+    connect-src https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.emailjs.com;
     img-src 'self' data:;
     frame-src 'none';
     object-src 'none';
   ">
   <title>سكربتاتي</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     :root {
       --bg: #080b12; --bg2: #0d1120; --surface: #111827;
@@ -253,18 +254,21 @@
       <button class="auth-btn" onclick="doRegister()" id="regBtn">إنشاء حساب</button>
     </div>
 
-    <!-- شاشة انتظار التحقق -->
-    <div id="verifyScreen" class="hidden">
+    <!-- ✅ شاشة OTP الجديدة -->
+    <div id="otpScreen" class="hidden">
       <div class="verify-screen">
-        <div class="verify-icon">📧</div>
-        <div class="verify-title">تحقق من إيميلك</div>
-        <div class="verify-sub">أرسلنا رابط التحقق على</div>
-        <div class="verify-email-badge" id="verifyEmailBadge"></div>
-        <div class="verify-sub" style="margin-bottom:16px">افتح الإيميل واضغط على الرابط، ثم ارجع هنا</div>
+        <div class="verify-icon">🔐</div>
+        <div class="verify-title">أدخل كود التحقق</div>
+        <div class="verify-sub">أرسلنا كود من 6 أرقام على</div>
+        <div class="verify-email-badge" id="otpEmailBadge"></div>
+        <div class="verify-sub" style="margin-bottom:16px">صلاحية الكود 5 دقائق</div>
+        <input class="field-input" type="text" id="otpInput"
+          placeholder="000000" dir="ltr" maxlength="6" inputmode="numeric"
+          style="text-align:center;font-size:26px;letter-spacing:10px;font-weight:800;margin-bottom:16px" />
         <div class="verify-actions">
-          <button class="btn-verify-check" id="checkVerifiedBtn" onclick="checkVerified()">✅ تحققت، دخّلني</button>
-          <button class="btn-resend" id="resendLinkBtn" onclick="resendLink()">إعادة إرسال الرابط</button>
-          <button class="btn-back-login" onclick="backFromVerify()">← رجوع</button>
+          <button class="btn-verify-check" id="verifyOTPBtn" onclick="verifyOTP()">✅ تحقق من الكود</button>
+          <button class="btn-resend" id="resendOTPBtn" onclick="resendOTP()">إرسال كود جديد</button>
+          <button class="btn-back-login" onclick="backFromOTP()">← رجوع</button>
         </div>
       </div>
     </div>
@@ -406,8 +410,6 @@
     getAuth, onAuthStateChanged,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    sendEmailVerification,
-    reload,
     signOut
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
@@ -428,8 +430,14 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  let pendingEmail = null;
-  let pendingPass  = null;
+  // ✅ إعدادات EmailJS
+  const EMAILJS_SERVICE_ID  = 'service_3pb42al';
+  const EMAILJS_TEMPLATE_ID = 'template_csa66tq';
+  const EMAILJS_PUBLIC_KEY  = 'J66hdfOwUZRPQ1nYu';
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+
+  // ✅ بيانات OTP المؤقتة
+  let otpData = { code: null, email: null, password: null, expires: null, attempts: 0 };
 
   function escapeHTML(str) {
     if (!str) return '';
@@ -527,11 +535,13 @@
     document.getElementById("authSuccess").style.display = "none";
   }
 
-  function showVerifyScreen(email) {
+  // ✅ عرض شاشة OTP
+  function showOTPScreen(email) {
     document.getElementById("registerForm").classList.add("hidden");
     document.getElementById("authTabs").classList.add("hidden");
-    document.getElementById("verifyScreen").classList.remove("hidden");
-    document.getElementById("verifyEmailBadge").textContent = email;
+    document.getElementById("otpScreen").classList.remove("hidden");
+    document.getElementById("otpEmailBadge").textContent = email;
+    document.getElementById("otpInput").value = "";
     hideAuthMessages();
   }
 
@@ -550,84 +560,83 @@
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
     btn.disabled = true; btn.textContent = "جاري الدخول...";
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, pass);
-      if (!cred.user.emailVerified) {
-        await signOut(auth);
-        pendingEmail = email;
-        pendingPass  = pass;
-        showVerifyScreen(email);
-        showAuthError("لازم تتحقق من إيميلك أول");
-        btn.disabled = false; btn.textContent = "دخول";
-        return;
-      }
+      await signInWithEmailAndPassword(auth, email, pass);
     } catch(e) {
       showAuthError("بيانات الدخول غلط، حاول مرة ثانية");
       btn.disabled = false; btn.textContent = "دخول";
     }
   };
 
+  // ✅ doRegister الجديدة — ترسل OTP بدل إنشاء الحساب مباشرة
   window.doRegister = async () => {
     const email = sanitizeInput(document.getElementById("regEmail").value.trim(), 254);
     const pass  = document.getElementById("regPass").value;
     const btn   = document.getElementById("regBtn");
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
     if (pass.length < 6) return showAuthError("كلمة المرور لازم تكون 6 أحرف أو أكثر");
+    btn.disabled = true; btn.textContent = "جاري الإرسال...";
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    otpData = { code, email, password: pass, expires: Date.now() + 5 * 60 * 1000, attempts: 0 };
+
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,
+        { to_email: email, passcode: code });
+      showOTPScreen(email);
+    } catch(e) {
+      showAuthError("فشل إرسال الكود، تأكد من الإيميل وحاول مرة ثانية");
+    }
+    btn.disabled = false; btn.textContent = "إنشاء حساب";
+  };
+
+  // ✅ التحقق من OTP وإنشاء الحساب
+  window.verifyOTP = async () => {
+    const entered = document.getElementById("otpInput").value.trim();
+    const btn = document.getElementById("verifyOTPBtn");
+    if (!entered || entered.length !== 6) return showAuthError("أدخل الكود المكون من 6 أرقام");
+    if (Date.now() > otpData.expires) return showAuthError("انتهت صلاحية الكود، اطلب كوداً جديداً");
+    if (otpData.attempts >= 3) return showAuthError("تجاوزت عدد المحاولات، اطلب كوداً جديداً");
+
+    otpData.attempts++;
+    if (entered !== otpData.code) {
+      return showAuthError(`كود غلط، تبقى ${3 - otpData.attempts} محاولة`);
+    }
+
     btn.disabled = true; btn.textContent = "جاري الإنشاء...";
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      await sendEmailVerification(cred.user);
-      pendingEmail = email;
-      pendingPass  = pass;
-      await signOut(auth);
-      showVerifyScreen(email);
+      await createUserWithEmailAndPassword(auth, otpData.email, otpData.password);
+      otpData = { code: null, email: null, password: null, expires: null, attempts: 0 };
     } catch(e) {
       let msg = "حدث خطأ، حاول مرة ثانية";
       if (e.code === "auth/email-already-in-use") msg = "هذا الإيميل مسجل مسبقاً";
       if (e.code === "auth/invalid-email") msg = "صيغة الإيميل غلط";
       showAuthError(msg);
-    }
-    btn.disabled = false; btn.textContent = "إنشاء حساب";
-  };
-
-  window.checkVerified = async () => {
-    const btn = document.getElementById("checkVerifiedBtn");
-    btn.disabled = true; btn.textContent = "جاري التحقق...";
-    try {
-      const cred = await signInWithEmailAndPassword(auth, pendingEmail, pendingPass);
-      await reload(cred.user);
-      if (cred.user.emailVerified) {
-        pendingEmail = null;
-        pendingPass  = null;
-        // onAuthStateChanged يكمل الباقي تلقائياً
-      } else {
-        await signOut(auth);
-        showAuthError("ما تحققت بعد، افتح الإيميل واضغط الرابط");
-        btn.disabled = false; btn.textContent = "✅ تحققت، دخّلني";
-      }
-    } catch(e) {
-      showAuthError("حدث خطأ، حاول مرة ثانية");
-      btn.disabled = false; btn.textContent = "✅ تحققت، دخّلني";
+      btn.disabled = false; btn.textContent = "✅ تحقق من الكود";
     }
   };
 
-  window.resendLink = async () => {
-    const btn = document.getElementById("resendLinkBtn");
+  // ✅ إعادة إرسال OTP
+  window.resendOTP = async () => {
+    const btn = document.getElementById("resendOTPBtn");
     btn.disabled = true; btn.textContent = "جاري الإرسال...";
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    otpData.code     = code;
+    otpData.expires  = Date.now() + 5 * 60 * 1000;
+    otpData.attempts = 0;
     try {
-      const cred = await signInWithEmailAndPassword(auth, pendingEmail, pendingPass);
-      await sendEmailVerification(cred.user);
-      await signOut(auth);
-      showAuthSuccess("📨 تم إرسال رابط جديد");
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,
+        { to_email: otpData.email, passcode: code });
+      showAuthSuccess("📨 تم إرسال كود جديد");
     } catch(e) {
       showAuthError("فشل الإرسال، حاول مرة ثانية");
     }
-    setTimeout(() => { btn.disabled = false; btn.textContent = "إعادة إرسال الرابط"; }, 30000);
+    setTimeout(() => { btn.disabled = false; btn.textContent = "إرسال كود جديد"; }, 30000);
   };
 
-  window.backFromVerify = () => {
-    pendingEmail = null;
-    pendingPass  = null;
-    document.getElementById("verifyScreen").classList.add("hidden");
+  // ✅ رجوع من شاشة OTP
+  window.backFromOTP = () => {
+    otpData = { code: null, email: null, password: null, expires: null, attempts: 0 };
+    document.getElementById("otpScreen").classList.add("hidden");
     document.getElementById("authTabs").classList.remove("hidden");
     switchTab("register");
     hideAuthMessages();
@@ -637,7 +646,7 @@
 
   onAuthStateChanged(auth, (user) => {
     document.getElementById("loadingScreen").classList.add("hidden");
-    if (user && user.emailVerified) {
+    if (user) {
       currentUser = user;
       document.getElementById("userEmail").textContent = user.email;
       document.getElementById("authScreen").classList.add("hidden");
@@ -650,7 +659,7 @@
       currentUser = null; scripts = [];
       document.getElementById("appScreen").classList.add("hidden");
       document.getElementById("authScreen").classList.remove("hidden");
-      document.getElementById("verifyScreen").classList.add("hidden");
+      document.getElementById("otpScreen").classList.add("hidden");
       document.getElementById("authTabs").classList.remove("hidden");
       document.getElementById("loginForm").classList.remove("hidden");
       document.getElementById("registerForm").classList.add("hidden");
@@ -736,7 +745,7 @@
       return okSearch && okPlatform && okCategory;
     });
 
-    if (sortBy === "newest")        filtered.sort((a,b) => b.id - a.id);
+    if (sortBy === "newest")   filtered.sort((a,b) => b.id - a.id);
     else if (sortBy === "oldest")   filtered.sort((a,b) => a.id - b.id);
     else if (sortBy === "longest")  filtered.sort((a,b) => wordCount(`${b.hook||""} ${b.value||""} ${b.result||""} ${b.cta||""}`) - wordCount(`${a.hook||""} ${a.value||""} ${a.result||""} ${a.cta||""}`));
     else if (sortBy === "shortest") filtered.sort((a,b) => wordCount(`${a.hook||""} ${a.value||""} ${a.result||""} ${a.cta||""}`) - wordCount(`${b.hook||""} ${b.value||""} ${b.result||""} ${b.cta||""}`));
