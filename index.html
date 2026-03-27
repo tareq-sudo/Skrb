@@ -100,10 +100,6 @@
     .filter-select { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; outline: none; transition: all .2s; }
     .filter-select:focus { border-color: var(--accent); color: var(--text); }
     .filter-select option { background: var(--surface2); }
-    .pills { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
-    .pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text3); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
-    .pill:hover { border-color: var(--accent); color: var(--accent); }
-    .pill.active { background: var(--glow); border-color: var(--accent); color: var(--accent); }
     .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px; }
     .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 10px; text-align: center; transition: border-color .2s; }
     .stat-card:hover { border-color: var(--border2); }
@@ -190,6 +186,16 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
     @media (max-width: 480px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } .detail-title { font-size: 20px; } }
+
+    /* ✅ مودال حذف الحساب */
+    .delete-account-modal .modal-box { border-color: #fb718540; }
+    .otp-input-large { width: 100%; padding: 14px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 13px; font-family: inherit; font-size: 28px; font-weight: 800; color: var(--text); outline: none; text-align: center; letter-spacing: 12px; margin-bottom: 16px; transition: border-color .2s; }
+    .otp-input-large:focus { border-color: var(--red); box-shadow: 0 0 0 3px #fb718520; }
+    .btn-danger-full { width: 100%; padding: 13px; background: #fb718520; border: 1px solid #fb718540; border-radius: 13px; color: var(--red); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; margin-bottom: 8px; }
+    .btn-danger-full:hover { background: #fb718530; }
+    .btn-danger-full:disabled { opacity: 0.4; cursor: not-allowed; }
+    .delete-account-btn { background: transparent; border: none; color: var(--text3); font-family: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; padding: 8px 14px; transition: color .2s; }
+    .delete-account-btn:hover { color: var(--red); }
   </style>
 </head>
 <body>
@@ -199,6 +205,7 @@
 <div class="blob blob-3"></div>
 <div class="toast" id="toast"></div>
 
+<!-- مودال حذف السكربت -->
 <div class="modal-overlay hidden" id="deleteModal">
   <div class="modal-box">
     <div class="modal-icon">🗑️</div>
@@ -208,6 +215,33 @@
       <button class="modal-cancel" id="modalCancelBtn">إلغاء</button>
       <button class="modal-confirm" id="modalConfirmBtn">نعم، احذف</button>
     </div>
+  </div>
+</div>
+
+<!-- ✅ مودال حذف الحساب — المرحلة 1: تأكيد -->
+<div class="modal-overlay hidden delete-account-modal" id="deleteAccountModal1">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">حذف الحساب نهائياً</div>
+    <div class="modal-sub">سيتم حذف حسابك وكل سكربتاتك بشكل نهائي ولا يمكن التراجع.<br><br>سنرسل كود تأكيد على إيميلك.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="document.getElementById('deleteAccountModal1').classList.add('hidden')">إلغاء</button>
+      <button class="modal-confirm" id="sendDeleteOTPBtn" onclick="sendDeleteOTP()">إرسال الكود</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ مودال حذف الحساب — المرحلة 2: إدخال الكود -->
+<div class="modal-overlay hidden delete-account-modal" id="deleteAccountModal2">
+  <div class="modal-box">
+    <div class="modal-icon">🔐</div>
+    <div class="modal-title">أدخل كود التأكيد</div>
+    <div class="modal-sub">أرسلنا كود على إيميلك، صلاحيته 5 دقائق.</div>
+    <input class="otp-input-large" type="text" id="deleteOTPInput" placeholder="000000" maxlength="6" inputmode="numeric" dir="ltr" />
+    <div id="deleteOTPError" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none;text-align:center"></div>
+    <button class="btn-danger-full" id="confirmDeleteBtn" onclick="confirmDeleteAccount()">🗑️ حذف الحساب نهائياً</button>
+    <button class="btn-resend" id="resendDeleteOTPBtn" onclick="resendDeleteOTP()" style="width:100%;margin-bottom:8px">إعادة إرسال الكود</button>
+    <button class="btn-back-login" onclick="cancelDeleteAccount()" style="width:100%;text-align:center">إلغاء</button>
   </div>
 </div>
 
@@ -254,7 +288,6 @@
       <button class="auth-btn" onclick="doRegister()" id="regBtn">إنشاء حساب</button>
     </div>
 
-    <!-- ✅ شاشة OTP الجديدة -->
     <div id="otpScreen" class="hidden">
       <div class="verify-screen">
         <div class="verify-icon">🔐</div>
@@ -323,6 +356,10 @@
       </div>
       <div class="stats-grid" id="statsRow"></div>
       <div class="grid" id="grid"></div>
+      <!-- ✅ زر حذف الحساب في أسفل الصفحة -->
+      <div style="text-align:center;margin-top:40px;padding-bottom:20px">
+        <button class="delete-account-btn" onclick="startDeleteAccount()">حذف الحساب نهائياً</button>
+      </div>
     </div>
     <div id="formView" class="hidden">
       <div class="form-card">
@@ -410,11 +447,12 @@
     getAuth, onAuthStateChanged,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    deleteUser,
     signOut
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
     getFirestore, collection, doc,
-    addDoc, getDocs, updateDoc, deleteDoc, query, where
+    addDoc, getDocs, updateDoc, deleteDoc, query, where, writeBatch
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -430,14 +468,15 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ✅ إعدادات EmailJS
   const EMAILJS_SERVICE_ID  = 'service_3pb42al';
   const EMAILJS_TEMPLATE_ID = 'template_csa66tq';
   const EMAILJS_PUBLIC_KEY  = 'J66hdfOwUZRPQ1nYu';
   emailjs.init(EMAILJS_PUBLIC_KEY);
 
-  // ✅ بيانات OTP المؤقتة
   let otpData = { code: null, email: null, password: null, expires: null, attempts: 0 };
+
+  // ✅ بيانات OTP حذف الحساب
+  let deleteOTPData = { code: null, expires: null, attempts: 0 };
 
   function escapeHTML(str) {
     if (!str) return '';
@@ -473,6 +512,100 @@
 
   let scripts=[], filterPlatform="الكل", filterCategory="الكل", sortBy="newest";
   let currentScript=null, editingId=null, currentUser=null;
+
+  // ✅ بدء عملية حذف الحساب
+  window.startDeleteAccount = () => {
+    document.getElementById('deleteAccountModal1').classList.remove('hidden');
+  };
+
+  // ✅ إرسال OTP الحذف
+  window.sendDeleteOTP = async () => {
+    const btn = document.getElementById('sendDeleteOTPBtn');
+    btn.disabled = true; btn.textContent = "جاري الإرسال...";
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    deleteOTPData = { code, expires: Date.now() + 5 * 60 * 1000, attempts: 0 };
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,
+        { to_email: currentUser.email, passcode: code });
+      document.getElementById('deleteAccountModal1').classList.add('hidden');
+      document.getElementById('deleteOTPInput').value = '';
+      document.getElementById('deleteOTPError').style.display = 'none';
+      document.getElementById('deleteAccountModal2').classList.remove('hidden');
+    } catch(e) {
+      showToast("❌ فشل إرسال الكود، حاول مرة ثانية");
+    }
+    btn.disabled = false; btn.textContent = "إرسال الكود";
+  };
+
+  // ✅ تأكيد حذف الحساب بعد التحقق من الكود
+  window.confirmDeleteAccount = async () => {
+    const entered = document.getElementById('deleteOTPInput').value.trim();
+    const errEl   = document.getElementById('deleteOTPError');
+    const btn     = document.getElementById('confirmDeleteBtn');
+
+    errEl.style.display = 'none';
+    if (!entered || entered.length !== 6) {
+      errEl.textContent = "أدخل الكود المكون من 6 أرقام"; errEl.style.display = 'block'; return;
+    }
+    if (Date.now() > deleteOTPData.expires) {
+      errEl.textContent = "انتهت صلاحية الكود، اطلب كوداً جديداً"; errEl.style.display = 'block'; return;
+    }
+    if (deleteOTPData.attempts >= 3) {
+      errEl.textContent = "تجاوزت عدد المحاولات، اطلب كوداً جديداً"; errEl.style.display = 'block'; return;
+    }
+    deleteOTPData.attempts++;
+    if (entered !== deleteOTPData.code) {
+      errEl.textContent = `كود غلط، تبقى ${3 - deleteOTPData.attempts} محاولة`; errEl.style.display = 'block'; return;
+    }
+
+    btn.disabled = true; btn.textContent = "جاري الحذف...";
+    try {
+      // حذف كل السكربتات من Firestore
+      const q = query(collection(db, "scripts"), where("uid", "==", currentUser.uid));
+      const snap = await getDocs(q);
+      const batch = writeBatch(db);
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      // حذف الحساب من Firebase Auth
+      await deleteUser(currentUser);
+      document.getElementById('deleteAccountModal2').classList.add('hidden');
+      showToast("✅ تم حذف حسابك نهائياً");
+    } catch(e) {
+      if (e.code === 'auth/requires-recent-login') {
+        errEl.textContent = "لأمانك، سجّل دخول مرة ثانية ثم أعد المحاولة";
+        errEl.style.display = 'block';
+      } else {
+        errEl.textContent = "حدث خطأ، حاول مرة ثانية";
+        errEl.style.display = 'block';
+      }
+      btn.disabled = false; btn.textContent = "🗑️ حذف الحساب نهائياً";
+    }
+  };
+
+  // ✅ إعادة إرسال كود الحذف
+  window.resendDeleteOTP = async () => {
+    const btn = document.getElementById('resendDeleteOTPBtn');
+    btn.disabled = true; btn.textContent = "جاري الإرسال...";
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    deleteOTPData = { code, expires: Date.now() + 5 * 60 * 1000, attempts: 0 };
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,
+        { to_email: currentUser.email, passcode: code });
+      document.getElementById('deleteOTPError').style.display = 'none';
+      showToast("📨 تم إرسال كود جديد");
+    } catch(e) {
+      showToast("❌ فشل الإرسال، حاول مرة ثانية");
+    }
+    setTimeout(() => { btn.disabled = false; btn.textContent = "إعادة إرسال الكود"; }, 30000);
+  };
+
+  // ✅ إلغاء عملية الحذف
+  window.cancelDeleteAccount = () => {
+    deleteOTPData = { code: null, expires: null, attempts: 0 };
+    document.getElementById('deleteAccountModal2').classList.add('hidden');
+    document.getElementById('deleteOTPInput').value = '';
+    document.getElementById('deleteOTPError').style.display = 'none';
+  };
 
   function initWordCounters() {
     const pairs = [
@@ -535,7 +668,6 @@
     document.getElementById("authSuccess").style.display = "none";
   }
 
-  // ✅ عرض شاشة OTP
   function showOTPScreen(email) {
     document.getElementById("registerForm").classList.add("hidden");
     document.getElementById("authTabs").classList.add("hidden");
@@ -567,7 +699,6 @@
     }
   };
 
-  // ✅ doRegister الجديدة — ترسل OTP بدل إنشاء الحساب مباشرة
   window.doRegister = async () => {
     const email = sanitizeInput(document.getElementById("regEmail").value.trim(), 254);
     const pass  = document.getElementById("regPass").value;
@@ -575,10 +706,8 @@
     if (!email || !pass) return showAuthError("أدخل الإيميل وكلمة المرور");
     if (pass.length < 6) return showAuthError("كلمة المرور لازم تكون 6 أحرف أو أكثر");
     btn.disabled = true; btn.textContent = "جاري الإرسال...";
-
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     otpData = { code, email, password: pass, expires: Date.now() + 5 * 60 * 1000, attempts: 0 };
-
     try {
       await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,
         { to_email: email, passcode: code });
@@ -589,19 +718,16 @@
     btn.disabled = false; btn.textContent = "إنشاء حساب";
   };
 
-  // ✅ التحقق من OTP وإنشاء الحساب
   window.verifyOTP = async () => {
     const entered = document.getElementById("otpInput").value.trim();
     const btn = document.getElementById("verifyOTPBtn");
     if (!entered || entered.length !== 6) return showAuthError("أدخل الكود المكون من 6 أرقام");
     if (Date.now() > otpData.expires) return showAuthError("انتهت صلاحية الكود، اطلب كوداً جديداً");
     if (otpData.attempts >= 3) return showAuthError("تجاوزت عدد المحاولات، اطلب كوداً جديداً");
-
     otpData.attempts++;
     if (entered !== otpData.code) {
       return showAuthError(`كود غلط، تبقى ${3 - otpData.attempts} محاولة`);
     }
-
     btn.disabled = true; btn.textContent = "جاري الإنشاء...";
     try {
       await createUserWithEmailAndPassword(auth, otpData.email, otpData.password);
@@ -615,7 +741,6 @@
     }
   };
 
-  // ✅ إعادة إرسال OTP
   window.resendOTP = async () => {
     const btn = document.getElementById("resendOTPBtn");
     btn.disabled = true; btn.textContent = "جاري الإرسال...";
@@ -633,7 +758,6 @@
     setTimeout(() => { btn.disabled = false; btn.textContent = "إرسال كود جديد"; }, 30000);
   };
 
-  // ✅ رجوع من شاشة OTP
   window.backFromOTP = () => {
     otpData = { code: null, email: null, password: null, expires: null, attempts: 0 };
     document.getElementById("otpScreen").classList.add("hidden");
@@ -744,8 +868,7 @@
       const okCategory = filterCategory === "الكل" || s.category === filterCategory;
       return okSearch && okPlatform && okCategory;
     });
-
-    if (sortBy === "newest")   filtered.sort((a,b) => b.id - a.id);
+    if (sortBy === "newest")        filtered.sort((a,b) => b.id - a.id);
     else if (sortBy === "oldest")   filtered.sort((a,b) => a.id - b.id);
     else if (sortBy === "longest")  filtered.sort((a,b) => wordCount(`${b.hook||""} ${b.value||""} ${b.result||""} ${b.cta||""}`) - wordCount(`${a.hook||""} ${a.value||""} ${a.result||""} ${a.cta||""}`));
     else if (sortBy === "shortest") filtered.sort((a,b) => wordCount(`${a.hook||""} ${a.value||""} ${a.result||""} ${a.cta||""}`) - wordCount(`${b.hook||""} ${b.value||""} ${b.result||""} ${b.cta||""}`));
@@ -761,7 +884,6 @@
         </div>`;
       return;
     }
-
     grid.innerHTML = filtered.map(s => {
       const pc = PLATFORM_COLORS[s.platform] || PLATFORM_COLORS["شورتس"];
       const cc = CAT_COLORS[s.category] || CAT_COLORS["تقني"];
@@ -789,7 +911,6 @@
           </div>
         </div>`;
     }).join("");
-
     grid.querySelectorAll(".card[data-id]").forEach(card => {
       card.addEventListener("click", () => openDetail(card.dataset.id));
     });
@@ -832,7 +953,6 @@
     if (!title) return showToast("⚠️ أضف عنوان للسكربت");
     const btn = document.getElementById("saveBtn");
     btn.disabled = true; btn.textContent = "جاري الحفظ...";
-
     const script = {
       title,
       platform: validateSelect(document.getElementById("fPlatform").value, ALLOWED_PLATFORMS, "شورتس"),
@@ -846,7 +966,6 @@
       id: editingId ? (scripts.find(s=>s.firestoreId===editingId)?.id||Date.now()) : Date.now(),
     };
     if (editingId) script.firestoreId = editingId;
-
     const fid = await saveToFirestore(script);
     if (fid) {
       script.firestoreId = fid;
@@ -865,24 +984,19 @@
     const script = scripts.find(s => s.firestoreId === firestoreId);
     if (!script) return;
     currentScript = script;
-
     const pc = PLATFORM_COLORS[script.platform] || PLATFORM_COLORS["شورتس"];
     const cc = CAT_COLORS[script.category] || CAT_COLORS["تقني"];
-
     document.getElementById("dBadges").innerHTML = `
       <span class="badge" style="background:${pc.bg};color:${pc.text};border:1px solid ${pc.border}">${escapeHTML(script.platform)}</span>
       <span class="badge" style="background:${cc.bg};color:${cc.text};border:1px solid ${cc.border};margin-right:6px">${escapeHTML(script.category)}</span>
       <span class="detail-date">${escapeHTML(script.date)}</span>`;
-
     document.getElementById("dTitle").textContent = script.title;
-
     const sections = [
       { key:"hook",   label:"Hook — الخطاف",    color:"#fb7185" },
       { key:"value",  label:"Value — المحتوى",  color:"#38bdf8" },
       { key:"result", label:"Result — النتيجة", color:"#34d399" },
       { key:"cta",    label:"CTA — الدعوة",     color:"#a78bfa" },
     ];
-
     document.getElementById("dSections").innerHTML = sections
       .filter(s => script[s.key])
       .map(s => `
@@ -893,19 +1007,16 @@
           </div>
           <div class="detail-section-body">${escapeHTML(script[s.key])}</div>
         </div>`).join("");
-
     const actionsDiv = document.getElementById("detailActions");
     actionsDiv.innerHTML = `
       <button class="btn-delete" id="btnDelete">حذف</button>
       <button class="btn-copy"   id="btnCopy">📋 نسخ</button>
       <button class="btn-edit"   id="btnEdit">تعديل السكربت</button>`;
-
     document.getElementById("btnEdit").addEventListener("click", () => openForm(currentScript));
     document.getElementById("btnCopy").addEventListener("click", () => copyScript(currentScript));
     document.getElementById("btnDelete").addEventListener("click", () => {
       showDeleteModal(() => deleteCurrentScript());
     });
-
     showView("detail");
   };
 
